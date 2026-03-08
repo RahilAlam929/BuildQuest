@@ -90,7 +90,7 @@ export default function ChallengeTypes() {
             Flagship Innovation Challenges
           </h2>
           <p className="mx-auto mt-2 max-w-xl text-xs leading-6 text-slate-400 sm:text-sm">
-            Choose your track and complete registration in a clean single-card flow.
+            
           </p>
         </div>
 
