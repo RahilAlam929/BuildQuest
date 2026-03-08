@@ -252,7 +252,7 @@ export default function ChallengeTypes() {
                         href={challenge.submitHref}
                         className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-700 bg-slate-900/70 px-4 py-2.5 text-xs font-semibold text-slate-100 transition hover:border-slate-500"
                       >
-                        Submit Entry <ArrowUpRight className="h-4 w-4" />
+                        Submit Solution <ArrowUpRight className="h-4 w-4" />
                       </Link>
                     </div>
                   </div>
@@ -341,7 +341,7 @@ export default function ChallengeTypes() {
                     Registration Opens
                   </div>
                   <div className="mt-1 text-sm text-slate-400">
-                    March 7, 2026
+                    March 07 to 10 , 2026
                   </div>
                 </div>
 

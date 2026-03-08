@@ -156,7 +156,7 @@ export default function HeroSection() {
                   <Instagram className="h-4 w-4" />
                 </a>
                 <a
-                  href="https://github.com/RahilAlam929"
+                  href="https://github.com"
                   target="_blank"
                   rel="noreferrer"
                   className="chip-soft inline-flex h-8 w-8 items-center justify-center text-slate-200 hover:text-slate-50"
