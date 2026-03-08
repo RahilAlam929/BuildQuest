@@ -66,10 +66,7 @@ export default function RobotWelcome() {
       <div className="mx-auto max-w-6xl text-center">
         {/* HERO TEXT */}
         <div className="mb-8">
-          <div className="inline-flex items-center gap-2 rounded-full border border-sky-500/20 bg-slate-950/70 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-sky-300">
-            <Sparkles className="h-4 w-4" />
-            AI Interface
-          </div>
+        
 
           <h1 className="mt-5 text-4xl font-semibold text-white sm:text-5xl lg:text-6xl">
             Welcome to{" "}
