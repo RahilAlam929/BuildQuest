@@ -11,6 +11,7 @@
   "dependencies": {
     "@formspree/react": "^3.0.0",
     "@google/model-viewer": "^4.1.0",
+    "@vercel/analytics": "^1.6.1",
     "framer-motion": "^12.34.3",
     "lucide-react": "^0.575.0",
     "mongodb": "^7.1.0",
