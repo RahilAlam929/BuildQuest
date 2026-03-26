@@ -6,13 +6,11 @@ export const runtime = "nodejs";
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
-    const teamId = String(searchParams.get("teamId") || "")
-      .trim()
-      .toUpperCase();
+    const teamId = searchParams.get("teamId")?.toUpperCase();
 
     if (!teamId) {
       return NextResponse.json(
-        { ok: false, error: "Team ID is required." },
+        { ok: false, error: "Team ID required" },
         { status: 400 }
       );
     }
@@ -20,13 +18,13 @@ export async function GET(req: Request) {
     const client = await clientPromise;
     const db = client.db("portfolio");
 
-    const matchedTeam = await db.collection("challenge_registrations").findOne({
+    const team = await db.collection("challenge_registrations").findOne({
       teamId,
     });
 
-    if (!matchedTeam) {
+    if (!team) {
       return NextResponse.json(
-        { ok: false, error: "Invalid Team ID." },
+        { ok: false, error: "Invalid Team ID" },
         { status: 404 }
       );
     }
@@ -34,21 +32,17 @@ export async function GET(req: Request) {
     return NextResponse.json({
       ok: true,
       team: {
-        teamId: matchedTeam.teamId || "",
-        challengeType: matchedTeam.challengeType || "",
-        name: matchedTeam.name || "",
-        email: matchedTeam.email || "",
-        college: matchedTeam.college || "",
-        year: matchedTeam.year || "",
-        teamName: matchedTeam.teamName || "",
-        teamMembers: matchedTeam.teamMembers || "",
+        teamId: team.teamId,
+        challengeType: team.challengeType,
+        name: team.name,
+        email: team.email,
+        teamName: team.teamName,
+        teamMembers: team.teamMembers,
       },
     });
   } catch (error: any) {
-    console.error("TEAM FETCH ERROR:", error);
-
     return NextResponse.json(
-      { ok: false, error: error?.message || "Server error" },
+      { ok: false, error: error.message },
       { status: 500 }
     );
   }

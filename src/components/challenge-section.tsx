@@ -1,390 +1,212 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
 import {
-  ChevronLeft,
-  ChevronRight,
-  ArrowUpRight,
-  CalendarDays,
-  Trophy,
-  Gift,
-  Sparkles,
-  X,
+  ArrowRight,
   Brain,
   Code2,
+  Lightbulb,
+  Sparkles,
+  Trophy,
+  Zap,
 } from "lucide-react";
 
-type ChallengeKey = "hackathon" | "ideathon";
-
-const challenges: Record<
-  ChallengeKey,
+const challengeCards = [
   {
-    key: ChallengeKey;
-    pill: string;
-    title: string;
-    subtitle: string;
-    regEnds: string;
-    registerHref: string;
-    submitHref: string;
-    problemHref: string;
-    guideHref: string;
-    accent: string;
-    ring: string;
-  }
-> = {
-  hackathon: {
-    key: "hackathon",
-    pill: "Hackathon",
-    title: "Developer Progress Tracker",
-    subtitle: "BUILD | LIVE PRODUCT",
-    regEnds: "Tue Mar 10 2026",
+    title: "AI Hackathon",
+    subtitle: "Build real-world AI solutions",
+    type: "hackathon",
+    description:
+      "Create practical AI products, tools, or assistants that solve meaningful real-world problems.",
+    highlights: [
+      "Team-based innovation",
+      "Product + execution focused",
+      "Portfolio-worthy builds",
+    ],
+    accent:
+      "from-sky-500/20 via-cyan-500/10 to-blue-500/20",
+    iconBg: "bg-sky-500/10 text-sky-300 border-sky-500/20",
+    button:
+      "from-sky-500 via-cyan-500 to-blue-500",
+    icon: <Code2 className="h-5 w-5" />,
+    exploreHref: "/challenge/hackathon",
     registerHref: "/challenge/register?type=hackathon",
     submitHref: "/challenge/submit?type=hackathon",
-    problemHref: "/challenge/problem?type=hackathon",
-    guideHref: "/challenge/guide?type=hackathon",
-    accent: "from-sky-500 via-blue-500 to-indigo-500",
-    ring: "border-sky-500/30",
   },
-  ideathon: {
-    key: "ideathon",
-    pill: "Ideathon",
-    title: "Personal Data Ownership",
-    subtitle: "IDEA | SOLUTION FRAMEWORK",
-    regEnds: "Tue Mar 10 2026",
+  {
+    title: "Ideathon",
+    subtitle: "Think deeply. Design boldly.",
+    type: "ideathon",
+    description:
+      "Present strong concepts, creative product thinking, and scalable solutions for important challenges.",
+    highlights: [
+      "Idea-first innovation",
+      "Problem solving framework",
+      "Strong presentation value",
+    ],
+    accent:
+      "from-fuchsia-500/20 via-violet-500/10 to-sky-500/20",
+    iconBg: "bg-fuchsia-500/10 text-fuchsia-300 border-fuchsia-500/20",
+    button:
+      "from-fuchsia-500 via-violet-500 to-sky-500",
+    icon: <Lightbulb className="h-5 w-5" />,
+    exploreHref: "/challenge/ideathon",
     registerHref: "/challenge/register?type=ideathon",
     submitHref: "/challenge/submit?type=ideathon",
-    problemHref: "/challenge/problem?type=ideathon",
-    guideHref: "/challenge/guide?type=ideathon",
-    accent: "from-fuchsia-500 via-purple-500 to-sky-500",
-    ring: "border-fuchsia-500/30",
   },
-};
+  {
+    title: "Weekly Challenge",
+    subtitle: "One problem. One focused build.",
+    type: "weekly-debugging",
+    description:
+      "Every week, solve a fresh builder challenge designed to sharpen execution, creativity, and consistency.",
+    highlights: [
+      "New challenge every week",
+      "Fast execution mindset",
+      "Skill-building through practice",
+    ],
+    accent:
+      "from-cyan-500/20 via-blue-500/10 to-violet-500/20",
+    iconBg: "bg-cyan-500/10 text-cyan-300 border-cyan-500/20",
+    button:
+      "from-cyan-500 via-sky-500 to-violet-500",
+    icon: <Brain className="h-5 w-5" />,
+    exploreHref: "/challenge/weekly",
+    registerHref: "/challenge/register?type=weekly-debugging",
+    submitHref: "/challenge/submit?type=weekly-debugging",
+  },
+];
 
-export default function ChallengeTypes() {
-  const [tab, setTab] = useState<ChallengeKey>("hackathon");
-  const [timelineOpen, setTimelineOpen] = useState(false);
-
-  const challenge = useMemo(() => challenges[tab], [tab]);
-
-  const togglePrev = () => {
-    setTab((prev) => (prev === "hackathon" ? "ideathon" : "hackathon"));
-  };
-
-  const toggleNext = () => {
-    setTab((prev) => (prev === "hackathon" ? "ideathon" : "hackathon"));
-  };
-
+export default function ChallengeSection() {
   return (
-    <section
-      id="challenge"
-      className="relative overflow-hidden px-4 py-8 sm:px-6 lg:px-8"
-    >
-      <div className="pointer-events-none absolute -left-16 top-10 h-56 w-56 rounded-full bg-sky-500/10 blur-3xl" />
-      <div className="pointer-events-none absolute -right-16 bottom-0 h-56 w-56 rounded-full bg-fuchsia-500/10 blur-3xl" />
+    <section className="relative overflow-hidden rounded-[32px] border border-slate-800/70 bg-slate-950/55 p-6 sm:p-8">
+      <div className="pointer-events-none absolute -left-20 top-8 h-40 w-40 rounded-full bg-cyan-500/10 blur-3xl" />
+      <div className="pointer-events-none absolute right-0 top-0 h-40 w-40 rounded-full bg-fuchsia-500/10 blur-3xl" />
 
-      <div className="relative mx-auto max-w-4xl">
-        <div className="mb-5 text-center">
-          <h2 className="text-2xl font-semibold tracking-tight text-white sm:text-3xl">
-            Flagship Innovation Challenges
-          </h2>
-          <p className="mx-auto mt-2 max-w-xl text-xs leading-6 text-slate-400 sm:text-sm">
-            
-          </p>
+      <div className="relative">
+        {/* Header */}
+        <div className="inline-flex items-center gap-2 rounded-full border border-cyan-500/20 bg-cyan-500/10 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-cyan-300">
+          <Sparkles className="h-4 w-4" />
+          Challenge Arena
         </div>
 
-        <div className="mb-4 flex justify-center">
-          <div className="inline-flex w-full max-w-md rounded-full border border-slate-800/70 bg-slate-950/70 p-1.5">
-            <button
-              type="button"
-              onClick={() => setTab("hackathon")}
-              className={`flex-1 rounded-full px-4 py-2.5 text-sm font-semibold transition ${
-                tab === "hackathon"
-                  ? "bg-sky-500 text-white shadow-lg shadow-sky-500/20"
-                  : "text-slate-300 hover:text-sky-300"
-              }`}
-            >
-              <span className="inline-flex items-center gap-2">
-                <Code2 className="h-4 w-4" />
-                Hackathon
-              </span>
-            </button>
+        <div className="mt-4 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div className="max-w-3xl">
+            <h2 className="text-2xl font-semibold tracking-tight text-white sm:text-4xl">
+              Build, compete, and grow through challenges
+            </h2>
+            <p className="mt-3 text-sm leading-7 text-slate-400 sm:text-base">
+              Explore hackathons, ideathons, and weekly build challenges designed
+              to help developers and builders create stronger projects, sharper
+              ideas, and real proof of execution.
+            </p>
+          </div>
 
-            <button
-              type="button"
-              onClick={() => setTab("ideathon")}
-              className={`flex-1 rounded-full px-4 py-2.5 text-sm font-semibold transition ${
-                tab === "ideathon"
-                  ? "bg-fuchsia-500 text-white shadow-lg shadow-fuchsia-500/20"
-                  : "text-slate-300 hover:text-fuchsia-300"
-              }`}
-            >
-              <span className="inline-flex items-center gap-2">
-                <Brain className="h-4 w-4" />
-                Ideathon
-              </span>
-            </button>
+          <div className="flex items-center gap-2 rounded-full border border-amber-500/20 bg-amber-500/10 px-4 py-2 text-sm text-amber-300">
+            <Trophy className="h-4 w-4" />
+            Build like a founder
           </div>
         </div>
 
-        <div className="relative mx-auto flex max-w-md items-center justify-center gap-2 sm:gap-4">
-          <button
-            type="button"
-            onClick={togglePrev}
-            className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-slate-800/70 bg-slate-900/80 text-slate-300 transition hover:border-sky-400 hover:text-sky-300"
-            aria-label="Previous"
-          >
-            <ChevronLeft className="h-5 w-5" />
-          </button>
-
-          <div className="w-full">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={challenge.key}
-                initial={{ opacity: 0, y: 14, scale: 0.98 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -14, scale: 0.98 }}
-                transition={{ duration: 0.22, ease: "easeOut" }}
-                className={`overflow-hidden rounded-[28px] border ${challenge.ring} bg-slate-950/75 shadow-[0_0_0_1px_rgba(15,23,42,0.7),0_16px_40px_rgba(2,6,23,0.42)]`}
-              >
-                <div className="p-3 sm:p-4">
+        {/* Cards */}
+        <div className="mt-8 grid gap-5 lg:grid-cols-3">
+          {challengeCards.map((card) => (
+            <div
+              key={card.type}
+              className={`group rounded-[28px] border border-slate-800/70 bg-gradient-to-br ${card.accent} p-[1px]`}
+            >
+              <div className="h-full rounded-[27px] bg-slate-950/90 p-5 sm:p-6">
+                <div className="flex items-start justify-between gap-3">
                   <div
-                    className={`rounded-2xl bg-gradient-to-r ${challenge.accent} p-[1px]`}
+                    className={`inline-flex h-12 w-12 items-center justify-center rounded-2xl border ${card.iconBg}`}
                   >
-                    <div className="rounded-2xl bg-slate-950/92 p-4">
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="inline-flex items-center gap-2 rounded-full border border-slate-700/70 bg-slate-900/70 px-3 py-1 text-[10px] uppercase tracking-[0.18em] text-slate-300">
-                          <Sparkles className="h-3.5 w-3.5" />
-                          BuildQuest 1.0
-                        </div>
+                    {card.icon}
+                  </div>
 
-                        <div className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-[10px] uppercase tracking-[0.18em] text-emerald-300">
-                          {challenge.pill}
-                        </div>
-                      </div>
+                  <span className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1 text-[10px] uppercase tracking-[0.16em] text-slate-400">
+                    {card.type === "weekly-debugging"
+                      ? "Weekly"
+                      : card.type}
+                  </span>
+                </div>
 
-                      <div className="mt-3 rounded-2xl border border-slate-800/70 bg-slate-900/60 p-3">
-                        <div className="flex h-24 items-center justify-center rounded-xl bg-gradient-to-br from-slate-800 via-slate-900 to-slate-950 text-center sm:h-28">
-                          <div>
-                            <div className="text-[10px] uppercase tracking-[0.18em] text-slate-500">
-                              Innovation Challenge
-                            </div>
-                            <div className="mt-1 text-base font-semibold text-white sm:text-lg">
-                              {challenge.pill}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+                <h3 className="mt-5 text-xl font-semibold text-white">
+                  {card.title}
+                </h3>
+                <p className="mt-1 text-sm font-medium text-cyan-300">
+                  {card.subtitle}
+                </p>
 
-                      <div className="mt-4 text-center">
-                        <h3 className="text-xl font-semibold leading-tight text-white sm:text-2xl">
-                          {challenge.title}
-                        </h3>
+                <p className="mt-4 text-sm leading-6 text-slate-400">
+                  {card.description}
+                </p>
 
-                        <div className="mt-2 text-[11px] uppercase tracking-[0.16em] text-slate-500 sm:text-xs">
-                          {challenge.subtitle}
-                        </div>
-                      </div>
-
-                      <div className="mt-4 rounded-2xl border border-slate-800/70 bg-slate-900/50 p-3 text-center">
-                        <div className="flex items-center justify-center gap-2 text-slate-300">
-                          <CalendarDays className="h-4 w-4 text-sky-300" />
-                          <span className="text-sm font-medium">
-                            Registration Ends on
-                          </span>
-                        </div>
-                        <div className="mt-2 text-base font-semibold text-white sm:text-lg">
-                          {challenge.regEnds}
-                        </div>
-                      </div>
-
-                      <div className="mt-4 grid grid-cols-2 gap-3">
-                        <div className="rounded-2xl border border-slate-800/70 bg-slate-900/50 p-3 text-center">
-                          <div className="flex items-center justify-center gap-2 text-amber-300">
-                            <Trophy className="h-4 w-4" />
-                            <span className="text-[10px] uppercase tracking-[0.16em]">
-                              Winners
-                            </span>
-                          </div>
-                          <div className="mt-2 text-sm font-semibold text-white">
-                            Top 2
-                          </div>
-                        </div>
-
-                        <div className="rounded-2xl border border-slate-800/70 bg-slate-900/50 p-3 text-center">
-                          <div className="flex items-center justify-center gap-2 text-emerald-300">
-                            <Gift className="h-4 w-4" />
-                            <span className="text-[10px] uppercase tracking-[0.16em]">
-                              Rewards
-                            </span>
-                          </div>
-                          <div className="mt-2 text-sm font-semibold text-white">
-                            Prize
-                          </div>
-                        </div>
-                      </div>
-
-                      <Link
-                        href={challenge.registerHref}
-                        className={`mt-4 inline-flex w-full items-center justify-center rounded-2xl bg-gradient-to-r ${challenge.accent} px-5 py-3.5 text-sm font-semibold text-white transition hover:brightness-110`}
-                      >
-                        Register Now
-                      </Link>
-
-                      <div className="mt-3 grid grid-cols-2 gap-2">
-                        <Link
-                          href={challenge.problemHref}
-                          className="inline-flex items-center justify-center rounded-2xl border border-slate-800/70 bg-slate-900/60 px-4 py-2.5 text-xs font-medium text-slate-200 transition hover:border-sky-400 hover:text-sky-300"
-                        >
-                          Problem
-                        </Link>
-
-                        <Link
-                          href={challenge.guideHref}
-                          className="inline-flex items-center justify-center rounded-2xl border border-slate-800/70 bg-slate-900/60 px-4 py-2.5 text-xs font-medium text-slate-200 transition hover:border-fuchsia-400 hover:text-fuchsia-300"
-                        >
-                          Guide
-                        </Link>
-                      </div>
-
-                      <Link
-                        href={challenge.submitHref}
-                        className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-700 bg-slate-900/70 px-4 py-2.5 text-xs font-semibold text-slate-100 transition hover:border-slate-500"
-                      >
-                        Submit Solution <ArrowUpRight className="h-4 w-4" />
-                      </Link>
+                <div className="mt-5 space-y-2">
+                  {card.highlights.map((item) => (
+                    <div
+                      key={item}
+                      className="flex items-center gap-2 text-sm text-slate-300"
+                    >
+                      <Zap className="h-4 w-4 text-cyan-300" />
+                      <span>{item}</span>
                     </div>
+                  ))}
+                </div>
+
+                <div className="mt-6 grid gap-3">
+                  <Link
+                    href={card.exploreHref}
+                    className={`inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r ${card.button} px-5 py-3 text-sm font-semibold text-white transition hover:brightness-110`}
+                  >
+                    Explore Challenge
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <Link
+                      href={card.registerHref}
+                      className="inline-flex items-center justify-center rounded-2xl border border-slate-700 bg-slate-900/50 px-4 py-3 text-sm font-medium text-slate-200 transition hover:border-cyan-400 hover:text-cyan-300"
+                    >
+                      Register
+                    </Link>
+
+                    <Link
+                      href={card.submitHref}
+                      className="inline-flex items-center justify-center rounded-2xl border border-slate-700 bg-slate-900/50 px-4 py-3 text-sm font-medium text-slate-200 transition hover:border-cyan-400 hover:text-cyan-300"
+                    >
+                      Submit
+                    </Link>
                   </div>
                 </div>
-              </motion.div>
-            </AnimatePresence>
-          </div>
-
-          <button
-            type="button"
-            onClick={toggleNext}
-            className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-slate-800/70 bg-slate-900/80 text-slate-300 transition hover:border-fuchsia-400 hover:text-fuchsia-300"
-            aria-label="Next"
-          >
-            <ChevronRight className="h-5 w-5" />
-          </button>
-        </div>
-
-        <div className="mt-4 flex justify-center gap-2">
-          {(["hackathon", "ideathon"] as ChallengeKey[]).map((item) => (
-            <button
-              key={item}
-              type="button"
-              onClick={() => setTab(item)}
-              className={`h-2.5 rounded-full transition ${
-                tab === item ? "w-8 bg-sky-400" : "w-2.5 bg-slate-700"
-              }`}
-              aria-label={item}
-            />
+              </div>
+            </div>
           ))}
         </div>
 
-        <div className="mt-5 flex justify-center">
-          <button
-            type="button"
-            onClick={() => setTimelineOpen(true)}
-            className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-sky-500 via-blue-500 to-fuchsia-500 px-5 py-3 text-sm font-semibold text-white transition hover:brightness-110"
-          >
-            Our Initiatives <ArrowUpRight className="h-4 w-4" />
-          </button>
+        {/* Bottom helper */}
+        <div className="mt-8 grid gap-4 md:grid-cols-3">
+          <div className="rounded-2xl border border-slate-800/70 bg-slate-900/35 p-4">
+            <div className="text-sm font-semibold text-white">Explore</div>
+            <p className="mt-2 text-sm leading-6 text-slate-400">
+              Open challenge details, problem statements, and format before joining.
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-slate-800/70 bg-slate-900/35 p-4">
+            <div className="text-sm font-semibold text-white">Register</div>
+            <p className="mt-2 text-sm leading-6 text-slate-400">
+              Sign up, get your Team ID, and receive confirmation on your email.
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-slate-800/70 bg-slate-900/35 p-4">
+            <div className="text-sm font-semibold text-white">Submit</div>
+            <p className="mt-2 text-sm leading-6 text-slate-400">
+              Verify your Team ID, upload your work, and complete your final submission.
+            </p>
+          </div>
         </div>
       </div>
-
-      <AnimatePresence>
-        {timelineOpen && (
-          <motion.div
-            className="fixed inset-0 z-[999] flex items-center justify-center bg-black/70 p-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setTimelineOpen(false)}
-          >
-            <motion.div
-              initial={{ scale: 0.96, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.96, opacity: 0 }}
-              transition={{ duration: 0.2, ease: "easeOut" }}
-              onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-xl rounded-3xl border border-slate-800/70 bg-slate-950/95 p-5"
-            >
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <div className="text-xs uppercase tracking-[0.18em] text-slate-500">
-                    Challenge Timeline
-                  </div>
-                  <h3 className="mt-2 text-lg font-semibold text-white sm:text-xl">
-                    BuildQuest 1.0 Schedule
-                  </h3>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => setTimelineOpen(false)}
-                  className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-700 bg-slate-900/50 text-slate-300 transition hover:border-sky-400 hover:text-sky-300"
-                >
-                  <X className="h-5 w-5" />
-                </button>
-              </div>
-
-              <div className="mt-5 space-y-3">
-                <div className="rounded-2xl border border-slate-800/70 bg-slate-900/60 p-4">
-                  <div className="text-xs uppercase tracking-[0.16em] text-slate-500">
-                    Phase 01
-                  </div>
-                  <div className="mt-2 font-semibold text-white">
-                    Registration Opens
-                  </div>
-                  <div className="mt-1 text-sm text-slate-400">
-                    March 07 to 10 , 2026
-                  </div>
-                </div>
-
-                <div className="rounded-2xl border border-slate-800/70 bg-slate-900/60 p-4">
-                  <div className="text-xs uppercase tracking-[0.16em] text-slate-500">
-                    Phase 02
-                  </div>
-                  <div className="mt-2 font-semibold text-white">
-                    Build / Ideate Period
-                  </div>
-                  <div className="mt-1 text-sm text-slate-400">
-                    March 8 – March 16, 2026
-                  </div>
-                </div>
-
-                <div className="rounded-2xl border border-slate-800/70 bg-slate-900/60 p-4">
-                  <div className="text-xs uppercase tracking-[0.16em] text-slate-500">
-                    Phase 03
-                  </div>
-                  <div className="mt-2 font-semibold text-white">
-                    Final Submission
-                  </div>
-                  <div className="mt-1 text-sm text-slate-400">
-                    March 17, 2026
-                  </div>
-                </div>
-
-                <div className="rounded-2xl border border-slate-800/70 bg-slate-900/60 p-4">
-                  <div className="text-xs uppercase tracking-[0.16em] text-slate-500">
-                    Phase 04
-                  </div>
-                  <div className="mt-2 font-semibold text-white">
-                    Winner Announcement
-                  </div>
-                  <div className="mt-1 text-sm text-slate-400">
-                    March 18, 2026
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </section>
   );
 }

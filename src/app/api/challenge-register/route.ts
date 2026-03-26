@@ -4,8 +4,15 @@ import clientPromise from "@/lib/mongodb";
 
 export const runtime = "nodejs";
 
-function generateTeamId() {
-  return "TEAM-" + Math.random().toString(36).substring(2, 8).toUpperCase();
+function generateTeamId(type: string) {
+  const prefix =
+    type === "hackathon"
+      ? "HACK"
+      : type === "ideathon"
+      ? "IDEA"
+      : "WEEK";
+
+  return `${prefix}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
 }
 
 export async function POST(req: Request) {
@@ -13,7 +20,6 @@ export async function POST(req: Request) {
     const body = await req.json();
 
     const {
-      type,
       challengeType,
       name,
       email,
@@ -24,45 +30,34 @@ export async function POST(req: Request) {
       reason,
     } = body;
 
-    if (!name || !email) {
+    if (!name || !email || !challengeType) {
       return NextResponse.json(
-        {
-          ok: false,
-          success: false,
-          message: "Name and email are required",
-        },
+        { ok: false, error: "Required fields missing" },
         { status: 400 }
       );
     }
 
-    const finalChallengeType = challengeType || type || "register";
+    const teamId = generateTeamId(challengeType);
 
-    const teamId =
-      finalChallengeType === "hackathon" ||
-      finalChallengeType === "ideathon"
-        ? generateTeamId()
-        : null;
-
-    const registration = {
-      id: Date.now().toString(),
-      type: type || null,
-      challengeType: finalChallengeType,
-      name: name.trim(),
-      email: email.trim(),
-      college: college?.trim() || "",
-      year: year?.trim() || "",
-      teamName: teamName?.trim() || "",
-      teamMembers: teamMembers?.trim() || "",
-      reason: reason?.trim() || "",
+    const doc = {
       teamId,
+      challengeType,
+      name: name.trim(),
+      email: email.trim().toLowerCase(),
+      college: college || "",
+      year: year || "",
+      teamName: teamName || "",
+      teamMembers: teamMembers || "",
+      reason: reason || "",
       createdAt: new Date(),
     };
 
     const client = await clientPromise;
     const db = client.db("portfolio");
 
-    await db.collection("challenge_registrations").insertOne(registration);
+    await db.collection("challenge_registrations").insertOne(doc);
 
+    // MAIL
     try {
       const transporter = nodemailer.createTransport({
         service: "gmail",
@@ -75,68 +70,45 @@ export async function POST(req: Request) {
       await transporter.sendMail({
         from: `"Challenge Team" <${process.env.GMAIL_USER}>`,
         to: email,
-        subject: "Your Challenge Registration is Successful 🚀",
+        subject: "Registration Successful 🚀",
         html: `
-          <div style="font-family: Arial, sans-serif; line-height: 1.7; color: #111827;">
-            <h2>Registration Successful ✅</h2>
-            <p>Hello <strong>${name}</strong>,</p>
-            <p>Your registration has been completed successfully.</p>
+          <h2>You're Registered ✅</h2>
+          <p>Hello <b>${name}</b>,</p>
 
-            <p><strong>Challenge Type:</strong> ${finalChallengeType}</p>
-            <p><strong>College:</strong> ${college || "Not provided"}</p>
-            <p><strong>Year:</strong> ${year || "Not provided"}</p>
-            <p><strong>Team Name:</strong> ${teamName || "Not provided"}</p>
-            <p><strong>Total Team Members:</strong> ${teamMembers || "Not provided"}</p>
-            ${
-              teamId
-                ? `<p><strong>Team ID:</strong> ${teamId}</p>
-                   <p>Please keep this Team ID safe.</p>`
-                : ""
-            }
-          </div>
+          <p>Your registration is successful.</p>
+
+          <p><b>Team ID:</b> ${teamId}</p>
+          <p><b>Challenge:</b> ${challengeType}</p>
+
+          <p>Use this Team ID while submitting.</p>
         `,
       });
 
       if (process.env.CONTACT_TO_EMAIL) {
         await transporter.sendMail({
-          from: `"Challenge Admin Bot" <${process.env.GMAIL_USER}>`,
+          from: `"Admin Bot" <${process.env.GMAIL_USER}>`,
           to: process.env.CONTACT_TO_EMAIL,
-          subject: `New ${finalChallengeType} Registration - ${teamName || name}`,
+          subject: `New Registration - ${teamId}`,
           html: `
-            <div style="font-family: Arial, sans-serif; line-height: 1.7; color: #111827;">
-              <h2>New Registration Received 📩</h2>
-              <p><strong>Name:</strong> ${name}</p>
-              <p><strong>Email:</strong> ${email}</p>
-              <p><strong>Challenge Type:</strong> ${finalChallengeType}</p>
-              <p><strong>College:</strong> ${college || "Not provided"}</p>
-              <p><strong>Year:</strong> ${year || "Not provided"}</p>
-              <p><strong>Team Name:</strong> ${teamName || "Not provided"}</p>
-              <p><strong>Team Members:</strong> ${teamMembers || "Not provided"}</p>
-              <p><strong>Reason:</strong> ${reason || "Not provided"}</p>
-              <p><strong>Team ID:</strong> ${teamId || "N/A"}</p>
-            </div>
+            <h2>New Registration</h2>
+            <p>Name: ${name}</p>
+            <p>Email: ${email}</p>
+            <p>Team ID: ${teamId}</p>
+            <p>Type: ${challengeType}</p>
           `,
         });
       }
-    } catch (mailError) {
-      console.error("Mail error:", mailError);
+    } catch (e) {
+      console.error("MAIL ERROR:", e);
     }
 
     return NextResponse.json({
       ok: true,
-      success: true,
-      message: "Registration successful",
       teamId,
     });
   } catch (error: any) {
-    console.error("Challenge register error:", error);
-
     return NextResponse.json(
-      {
-        ok: false,
-        success: false,
-        message: error?.message || "Something went wrong",
-      },
+      { ok: false, error: error.message },
       { status: 500 }
     );
   }

@@ -8,10 +8,10 @@ import SkillsSection from "@/components/skills-section";
 import ProjectsSection from "@/components/projects-section";
 import BuilderHubSuperUltra from "@/components/builder-hub-super-ultra";
 import ChallengeSection from "@/components/challenge-section";
+import PlatformLinksSection from "@/components/platform-links-section";
 import WinnerShowcase from "@/components/winner-showcase";
 import ResourcesSection from "@/components/resources-section";
 import UpdatesSection from "@/components/updates-section";
-
 import EventsSection from "@/components/events-section";
 import ContactSection from "@/components/contact-section";
 import CursorGlow from "@/components/cursor-glow";
@@ -40,7 +40,6 @@ export default function Home() {
 
         <HeroSection />
 
-
         <div className="scroll-mt-24" id="about">
           <AboutSection />
         </div>
@@ -48,12 +47,13 @@ export default function Home() {
         <div className="scroll-mt-24" id="skills">
           <SkillsSection />
         </div>
+
         <BuilderHubSuperUltra />
 
         <div className="scroll-mt-24" id="projects">
           <ProjectsSection />
         </div>
-     
+    <PlatformLinksSection />
         <div className="scroll-mt-24" id="challenge">
           <ChallengeSection />
           <WinnerShowcase />
@@ -65,8 +65,8 @@ export default function Home() {
         </div>
 
         <div className="scroll-mt-24" id="updates">
-  <UpdatesSection />
-</div>
+          <UpdatesSection />
+        </div>
 
         <div className="scroll-mt-24" id="events">
           <EventsSection />

@@ -11,7 +11,9 @@
   "dependencies": {
     "@formspree/react": "^3.0.0",
     "@google/model-viewer": "^4.1.0",
+    "bcryptjs": "^3.0.3",
     "framer-motion": "^12.34.3",
+    "jsonwebtoken": "^9.0.3",
     "lucide-react": "^0.575.0",
     "mongodb": "^7.1.0",
     "next": "^16.1.6",
