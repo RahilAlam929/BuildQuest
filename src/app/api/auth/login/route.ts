@@ -7,13 +7,26 @@ export async function POST(req: NextRequest) {
   try {
     const { email, password } = await req.json();
 
+    if (!email || !password) {
+      return NextResponse.json(
+        { ok: false, message: "Email and password are required" },
+        { status: 400 }
+      );
+    }
+
+    const normalizedEmail = String(email).trim().toLowerCase();
+
     const client = await clientPromise;
-    const db = client.db();
+    const db = client.db(process.env.MONGODB_DB_NAME || "portfolio");
     const users = db.collection("users");
 
     const user = await users.findOne({
-      email: String(email).trim().toLowerCase(),
+      email: normalizedEmail,
     });
+
+    console.log("LOGIN DB:", process.env.MONGODB_DB_NAME || "portfolio");
+    console.log("LOGIN EMAIL:", normalizedEmail);
+    console.log("FOUND USER:", user ? "YES" : "NO");
 
     if (!user) {
       return NextResponse.json(
