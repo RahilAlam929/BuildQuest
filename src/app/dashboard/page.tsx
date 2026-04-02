@@ -24,7 +24,8 @@ import {
 } from "lucide-react";
 
 type TeamMember = {
-  id: string;
+  id?: string;
+  _id?: string;
   name: string;
   email: string;
   role: string;
@@ -33,6 +34,7 @@ type TeamMember = {
 };
 
 type UserType = {
+  _id?: string;
   name: string;
   email: string;
   college?: string;
@@ -43,6 +45,8 @@ type UserType = {
 };
 
 type RegistrationType = {
+  _id?: string;
+  userId?: string;
   teamId: string;
   challengeType: string;
   teamName?: string;
@@ -53,6 +57,8 @@ type RegistrationType = {
 };
 
 type SubmissionType = {
+  _id?: string;
+  userId?: string;
   teamId: string;
   challengeType: string;
   projectLink?: string;
@@ -62,14 +68,16 @@ type SubmissionType = {
 };
 
 const avatarOptions = [
-  "https://api.dicebear.com/7.x/adventurer/svg?seed=Nova",
+  "https://api.dicebear.com/7.x/bottts/svg?seed=RoboX",
+  "https://api.dicebear.com/7.x/bottts/svg?seed=CyberUnit",
+  "https://api.dicebear.com/7.x/bottts/svg?seed=MechaNova",
+  "https://api.dicebear.com/7.x/bottts/svg?seed=AstroBot",
   "https://api.dicebear.com/7.x/adventurer/svg?seed=Rahil",
-  "https://api.dicebear.com/7.x/adventurer/svg?seed=Orbit",
-  "https://api.dicebear.com/7.x/adventurer/svg?seed=Pixel",
-  "https://api.dicebear.com/7.x/adventurer/svg?seed=Builder",
-  "https://api.dicebear.com/7.x/adventurer/svg?seed=Cyber",
-  "https://api.dicebear.com/7.x/thumbs/svg?seed=Spark",
-  "https://api.dicebear.com/7.x/thumbs/svg?seed=Astro",
+  "https://api.dicebear.com/7.x/adventurer/svg?seed=Nova",
+  "https://api.dicebear.com/7.x/notionists/svg?seed=Builder",
+  "https://api.dicebear.com/7.x/notionists/svg?seed=Pixel",
+  "https://api.dicebear.com/7.x/micah/svg?seed=Orbit",
+  "https://api.dicebear.com/7.x/micah/svg?seed=Vision",
 ];
 
 function createEmptyMember(): TeamMember {
@@ -88,15 +96,26 @@ export default function DashboardPage() {
     user: UserType | null;
     registrations: RegistrationType[];
     submissions: SubmissionType[];
+    teamIds: string[];
+    sharedTeamRegistrations: RegistrationType[];
+    sharedTeamSubmissions: SubmissionType[];
+    sharedTeamUsers: UserType[];
   }>({
     user: null,
     registrations: [],
     submissions: [],
+    teamIds: [],
+    sharedTeamRegistrations: [],
+    sharedTeamSubmissions: [],
+    sharedTeamUsers: [],
   });
 
   const [loading, setLoading] = useState(true);
   const [avatar, setAvatar] = useState<string>("");
   const [showProfileEditor, setShowProfileEditor] = useState(false);
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [profileMsg, setProfileMsg] = useState("");
+
   const [editForm, setEditForm] = useState<UserType>({
     name: "",
     email: "",
@@ -130,6 +149,10 @@ export default function DashboardPage() {
             user,
             registrations: json.registrations || [],
             submissions: json.submissions || [],
+            teamIds: json.teamIds || [],
+            sharedTeamRegistrations: json.sharedTeamRegistrations || [],
+            sharedTeamSubmissions: json.sharedTeamSubmissions || [],
+            sharedTeamUsers: json.sharedTeamUsers || [],
           });
 
           setEditForm({
@@ -142,7 +165,7 @@ export default function DashboardPage() {
             teamMembers: user?.teamMembers || [],
           });
 
-          setAvatar(user?.profileImage || avatarOptions[1]);
+          setAvatar(user?.profileImage || avatarOptions[4]);
         }
       } catch (error) {
         console.error("Dashboard fetch error:", error);
@@ -170,6 +193,14 @@ export default function DashboardPage() {
     };
   }, [data.registrations, data.submissions]);
 
+  const teamStats = useMemo(() => {
+    return {
+      sharedMembers: data.sharedTeamUsers.length,
+      sharedRegistrations: data.sharedTeamRegistrations.length,
+      sharedSubmissions: data.sharedTeamSubmissions.length,
+    };
+  }, [data.sharedTeamUsers, data.sharedTeamRegistrations, data.sharedTeamSubmissions]);
+
   const recentActivity = useMemo(() => {
     const registrationActivity = data.registrations.map((item) => ({
       type: "registration",
@@ -196,19 +227,6 @@ export default function DashboardPage() {
       .slice(0, 6);
   }, [data.registrations, data.submissions]);
 
-  const saveProfileLocally = () => {
-    setData((prev) => ({
-      ...prev,
-      user: {
-        ...(prev.user as UserType),
-        ...editForm,
-        profileImage: avatar || editForm.profileImage,
-        teamMembers: editForm.teamMembers || [],
-      },
-    }));
-    setShowProfileEditor(false);
-  };
-
   const handleAvatarUpload = (file: File | undefined) => {
     if (!file) return;
     const reader = new FileReader();
@@ -230,21 +248,77 @@ export default function DashboardPage() {
   const removeTeamMember = (id: string) => {
     setEditForm((prev) => ({
       ...prev,
-      teamMembers: (prev.teamMembers || []).filter((member) => member.id !== id),
+      teamMembers: (prev.teamMembers || []).filter(
+        (member) => (member.id || member._id) !== id
+      ),
     }));
   };
 
   const updateTeamMember = (
     id: string,
-    field: keyof Omit<TeamMember, "id">,
+    field: keyof Omit<TeamMember, "id" | "_id">,
     value: string
   ) => {
     setEditForm((prev) => ({
       ...prev,
       teamMembers: (prev.teamMembers || []).map((member) =>
-        member.id === id ? { ...member, [field]: value } : member
+        (member.id || member._id) === id ? { ...member, [field]: value } : member
       ),
     }));
+  };
+
+  const saveProfilePermanently = async () => {
+    try {
+      setSavingProfile(true);
+      setProfileMsg("");
+
+      const payload = {
+        ...editForm,
+        profileImage: avatar || editForm.profileImage || "",
+        teamMembers: (editForm.teamMembers || []).map((member) => ({
+          name: member.name || "",
+          email: member.email || "",
+          role: member.role || "",
+          year: member.year || "",
+          college: member.college || "",
+        })),
+      };
+
+      const res = await fetch("/api/auth/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const json = await res.json();
+
+      if (!res.ok || !json.ok) {
+        throw new Error(json.message || "Failed to save profile");
+      }
+
+      setData((prev) => ({
+        ...prev,
+        user: json.user,
+      }));
+
+      setEditForm({
+        name: json.user.name || "",
+        email: json.user.email || "",
+        college: json.user.college || "",
+        year: json.user.year || "",
+        role: json.user.role || "",
+        profileImage: json.user.profileImage || "",
+        teamMembers: json.user.teamMembers || [],
+      });
+
+      setAvatar(json.user.profileImage || avatar);
+      setProfileMsg("Profile saved successfully.");
+      setShowProfileEditor(false);
+    } catch (error: any) {
+      setProfileMsg(error.message || "Failed to save profile");
+    } finally {
+      setSavingProfile(false);
+    }
   };
 
   if (loading) {
@@ -253,7 +327,7 @@ export default function DashboardPage() {
         <div className="section-shell p-8">
           <div className="text-lg font-semibold">Loading dashboard...</div>
           <p className="mt-2 text-sm text-slate-400">
-            Fetching your profile, registrations, and submissions.
+            Fetching your profile, registrations, and team workspace.
           </p>
         </div>
       </main>
@@ -331,7 +405,7 @@ export default function DashboardPage() {
                   <InfoCard label="Year" value={data.user.year || "-"} />
                   <InfoCard label="Role" value={data.user.role || "-"} />
                   <InfoCard
-                    label="Team Members"
+                    label="Saved Team Members"
                     value={String(data.user.teamMembers?.length || 0)}
                   />
                 </div>
@@ -372,8 +446,11 @@ export default function DashboardPage() {
                 {(data.user.teamMembers || []).length === 0 ? (
                   <EmptyState text="No team members added yet." />
                 ) : (
-                  (data.user.teamMembers || []).map((member) => (
-                    <div key={member.id} className="card-compact rounded-2xl p-4">
+                  (data.user.teamMembers || []).map((member, index) => (
+                    <div
+                      key={member.id || member._id || `${member.email}-${index}`}
+                      className="card-compact rounded-2xl p-4"
+                    >
                       <div className="flex items-start gap-3">
                         <div className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/[0.03] text-slate-300">
                           <UserRound className="h-4 w-4" />
@@ -424,6 +501,93 @@ export default function DashboardPage() {
                 accent="text-emerald-300"
               />
             </div>
+
+            <section className="section-shell p-6">
+              <div className="flex items-center gap-2 text-cyan-300">
+                <Users className="h-4 w-4" />
+                <span className="text-xs uppercase tracking-[0.16em]">
+                  Team Workspace
+                </span>
+              </div>
+
+              <h2 className="mt-3 text-2xl font-semibold">Shared team access</h2>
+
+              <div className="mt-5 grid gap-4 md:grid-cols-3">
+                <StatMini title="Team IDs" value={String(data.teamIds.length)} />
+                <StatMini title="Shared Members" value={String(teamStats.sharedMembers)} />
+                <StatMini title="Shared Submissions" value={String(teamStats.sharedSubmissions)} />
+              </div>
+
+              <div className="mt-6 grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
+                <div className="space-y-3">
+                  <div className="text-xs uppercase tracking-[0.16em] text-slate-500">
+                    Team Profiles
+                  </div>
+
+                  {data.sharedTeamUsers.length === 0 ? (
+                    <EmptyState text="No shared team members found." />
+                  ) : (
+                    data.sharedTeamUsers.map((member, index) => (
+                      <div
+                        key={member._id || member.email || `member-${index}`}
+                        className="card-compact rounded-2xl p-4"
+                      >
+                        <div className="flex items-start gap-3">
+                          <img
+                            src={member.profileImage || avatarOptions[0]}
+                            alt={member.name}
+                            className="h-11 w-11 rounded-full border border-white/10 object-cover bg-slate-900"
+                          />
+                          <div className="min-w-0">
+                            <div className="text-sm font-semibold text-white">
+                              {member.name}
+                            </div>
+                            <div className="mt-1 text-xs text-slate-400">
+                              {member.email}
+                            </div>
+                            <div className="mt-2 text-xs uppercase tracking-[0.14em] text-cyan-300">
+                              {member.role || "No role set"}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                <div className="space-y-3">
+                  <div className="text-xs uppercase tracking-[0.16em] text-slate-500">
+                    Team Activity
+                  </div>
+
+                  {data.sharedTeamRegistrations.length === 0 ? (
+                    <EmptyState text="No shared team activity found." />
+                  ) : (
+                    data.sharedTeamRegistrations.slice(0, 6).map((item, index) => (
+                      <div
+                        key={`${item.teamId}-${item.challengeType}-${index}`}
+                        className="card-compact rounded-2xl p-4"
+                      >
+                        <div className="flex items-center justify-between gap-3">
+                          <div>
+                            <div className="text-sm font-semibold text-white">
+                              {item.teamName || "Untitled Team"}
+                            </div>
+                            <div className="mt-1 text-xs text-slate-400">
+                              {item.challengeType}
+                            </div>
+                          </div>
+
+                          <div className="chip-soft px-3 py-1 text-[10px] uppercase tracking-[0.16em] text-cyan-300">
+                            {item.teamId}
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </section>
 
             <section className="section-shell p-6">
               <div className="flex items-center gap-2 text-cyan-300">
@@ -628,6 +792,49 @@ export default function DashboardPage() {
                 )}
               </div>
             </section>
+
+            <section className="section-shell p-6">
+              <h2 className="text-2xl font-semibold">Team Submissions</h2>
+
+              <div className="mt-5 grid gap-4">
+                {data.sharedTeamSubmissions.length === 0 ? (
+                  <EmptyState text="No team submissions found." />
+                ) : (
+                  data.sharedTeamSubmissions.map((item, index) => (
+                    <div
+                      key={`${item.teamId}-${item.challengeType}-${index}`}
+                      className="card-compact rounded-2xl p-5"
+                    >
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div>
+                          <div className="text-lg font-semibold text-white">
+                            {item.challengeType}
+                          </div>
+                          <div className="mt-1 text-sm text-slate-400">
+                            Team ID: {item.teamId}
+                          </div>
+                        </div>
+
+                        <div className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-xs uppercase tracking-[0.16em] text-emerald-300">
+                          Team Shared
+                        </div>
+                      </div>
+
+                      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                        <MiniInfo label="Project Link" value={item.projectLink || "-"} />
+                        <MiniInfo label="GitHub Link" value={item.githubLink || "-"} />
+                      </div>
+
+                      {item.note && (
+                        <div className="mt-4 rounded-2xl border border-slate-800 bg-slate-950/50 p-4 text-sm leading-6 text-slate-300">
+                          {item.note}
+                        </div>
+                      )}
+                    </div>
+                  ))
+                )}
+              </div>
+            </section>
           </section>
         </div>
       </main>
@@ -780,68 +987,73 @@ export default function DashboardPage() {
                       {(editForm.teamMembers || []).length === 0 ? (
                         <EmptyState text="No team members added yet." />
                       ) : (
-                        (editForm.teamMembers || []).map((member, index) => (
-                          <div
-                            key={member.id}
-                            className="card-compact rounded-2xl p-4"
-                          >
-                            <div className="mb-4 flex items-center justify-between gap-3">
-                              <div className="inline-flex items-center gap-2 text-sm font-medium text-white">
-                                <UserRound className="h-4 w-4 text-cyan-300" />
-                                Member {index + 1}
+                        (editForm.teamMembers || []).map((member, index) => {
+                          const memberId =
+                            member.id || member._id || `member-${index}`;
+
+                          return (
+                            <div
+                              key={memberId}
+                              className="card-compact rounded-2xl p-4"
+                            >
+                              <div className="mb-4 flex items-center justify-between gap-3">
+                                <div className="inline-flex items-center gap-2 text-sm font-medium text-white">
+                                  <UserRound className="h-4 w-4 text-cyan-300" />
+                                  Member {index + 1}
+                                </div>
+
+                                <button
+                                  type="button"
+                                  onClick={() => removeTeamMember(memberId)}
+                                  className="inline-flex items-center gap-2 rounded-full border border-rose-500/20 bg-rose-500/10 px-3 py-1.5 text-xs text-rose-300 transition hover:bg-rose-500/20"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                  Remove
+                                </button>
                               </div>
 
-                              <button
-                                type="button"
-                                onClick={() => removeTeamMember(member.id)}
-                                className="inline-flex items-center gap-2 rounded-full border border-rose-500/20 bg-rose-500/10 px-3 py-1.5 text-xs text-rose-300 transition hover:bg-rose-500/20"
-                              >
-                                <Trash2 className="h-3.5 w-3.5" />
-                                Remove
-                              </button>
-                            </div>
-
-                            <div className="grid gap-4 sm:grid-cols-2">
-                              <Field
-                                label="Name"
-                                value={member.name}
-                                onChange={(value) =>
-                                  updateTeamMember(member.id, "name", value)
-                                }
-                              />
-                              <Field
-                                label="Email"
-                                value={member.email}
-                                onChange={(value) =>
-                                  updateTeamMember(member.id, "email", value)
-                                }
-                              />
-                              <Field
-                                label="Role"
-                                value={member.role}
-                                onChange={(value) =>
-                                  updateTeamMember(member.id, "role", value)
-                                }
-                              />
-                              <Field
-                                label="Year"
-                                value={member.year}
-                                onChange={(value) =>
-                                  updateTeamMember(member.id, "year", value)
-                                }
-                              />
-                              <div className="sm:col-span-2">
+                              <div className="grid gap-4 sm:grid-cols-2">
                                 <Field
-                                  label="College / Organization"
-                                  value={member.college}
+                                  label="Name"
+                                  value={member.name}
                                   onChange={(value) =>
-                                    updateTeamMember(member.id, "college", value)
+                                    updateTeamMember(memberId, "name", value)
                                   }
                                 />
+                                <Field
+                                  label="Email"
+                                  value={member.email}
+                                  onChange={(value) =>
+                                    updateTeamMember(memberId, "email", value)
+                                  }
+                                />
+                                <Field
+                                  label="Role"
+                                  value={member.role}
+                                  onChange={(value) =>
+                                    updateTeamMember(memberId, "role", value)
+                                  }
+                                />
+                                <Field
+                                  label="Year"
+                                  value={member.year}
+                                  onChange={(value) =>
+                                    updateTeamMember(memberId, "year", value)
+                                  }
+                                />
+                                <div className="sm:col-span-2">
+                                  <Field
+                                    label="College / Organization"
+                                    value={member.college}
+                                    onChange={(value) =>
+                                      updateTeamMember(memberId, "college", value)
+                                    }
+                                  />
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        ))
+                          );
+                        })
                       )}
                     </div>
                   </div>
@@ -857,17 +1069,19 @@ export default function DashboardPage() {
 
                     <button
                       type="button"
-                      onClick={saveProfileLocally}
-                      className="rounded-full bg-gradient-to-r from-sky-500 via-cyan-500 to-violet-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:brightness-110"
+                      onClick={saveProfilePermanently}
+                      disabled={savingProfile}
+                      className="rounded-full bg-gradient-to-r from-sky-500 via-cyan-500 to-violet-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-70"
                     >
-                      Save Changes
+                      {savingProfile ? "Saving..." : "Save Changes"}
                     </button>
                   </div>
 
-                  <p className="text-xs text-slate-500">
-                    Team members, avatar, and profile changes are applied locally
-                    in this UI version. Connect an update API to persist them permanently.
-                  </p>
+                  {profileMsg && (
+                    <div className="rounded-2xl border border-cyan-400/20 bg-cyan-500/10 px-4 py-3 text-sm text-cyan-300">
+                      {profileMsg}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -912,6 +1126,17 @@ function StatCard({
   );
 }
 
+function StatMini({ title, value }: { title: string; value: string }) {
+  return (
+    <div className="card-compact rounded-2xl p-4">
+      <div className="text-xs uppercase tracking-[0.16em] text-slate-500">
+        {title}
+      </div>
+      <div className="mt-2 text-2xl font-semibold text-white">{value}</div>
+    </div>
+  );
+}
+
 function InfoCard({ label, value }: { label: string; value: string }) {
   return (
     <div className="card-compact rounded-2xl p-4">
@@ -951,7 +1176,8 @@ function ProgressRow({
   current: number;
   total: number;
 }) {
-  const percentage = total === 0 ? 0 : Math.min(100, Math.round((current / total) * 100));
+  const percentage =
+    total === 0 ? 0 : Math.min(100, Math.round((current / total) * 100));
 
   return (
     <div className="card-compact rounded-2xl p-4">
