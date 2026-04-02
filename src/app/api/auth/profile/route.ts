@@ -7,14 +7,7 @@ import { ObjectId } from "mongodb";
 type JwtPayload = {
   userId?: string;
   id?: string;
-};
-
-type TeamMember = {
-  name?: string;
   email?: string;
-  role?: string;
-  year?: string;
-  college?: string;
 };
 
 function getUserIdFromToken(token: string): string | null {
@@ -25,7 +18,8 @@ function getUserIdFromToken(token: string): string | null {
     ) as JwtPayload;
 
     return decoded.userId || decoded.id || null;
-  } catch {
+  } catch (error) {
+    console.error("JWT verify error:", error);
     return null;
   }
 }
@@ -37,7 +31,7 @@ export async function PATCH(req: NextRequest) {
 
     if (!token) {
       return NextResponse.json(
-        { ok: false, message: "Unauthorized" },
+        { ok: false, message: "Unauthorized: token missing" },
         { status: 401 }
       );
     }
@@ -46,7 +40,7 @@ export async function PATCH(req: NextRequest) {
 
     if (!userId) {
       return NextResponse.json(
-        { ok: false, message: "Invalid token" },
+        { ok: false, message: "Unauthorized: invalid token" },
         { status: 401 }
       );
     }
@@ -61,18 +55,10 @@ export async function PATCH(req: NextRequest) {
       role,
       profileImage,
       teamMembers,
-    }: {
-      name?: string;
-      email?: string;
-      college?: string;
-      year?: string;
-      role?: string;
-      profileImage?: string;
-      teamMembers?: TeamMember[];
     } = body;
 
     const safeTeamMembers = Array.isArray(teamMembers)
-      ? teamMembers.map((member) => ({
+      ? teamMembers.map((member: any) => ({
           name: String(member.name || "").trim(),
           email: String(member.email || "").trim(),
           role: String(member.role || "").trim(),
@@ -85,22 +71,23 @@ export async function PATCH(req: NextRequest) {
     const db = client.db();
     const users = db.collection("users");
 
-    const updatePayload: Record<string, unknown> = {
-      updatedAt: new Date(),
-    };
-
-    if (typeof name === "string") updatePayload.name = name.trim();
-    if (typeof email === "string") updatePayload.email = email.trim().toLowerCase();
-    if (typeof college === "string") updatePayload.college = college.trim();
-    if (typeof year === "string") updatePayload.year = year.trim();
-    if (typeof role === "string") updatePayload.role = role.trim();
-    if (typeof profileImage === "string") updatePayload.profileImage = profileImage;
-    updatePayload.teamMembers = safeTeamMembers;
-
     const result = await users.findOneAndUpdate(
       { _id: new ObjectId(userId) },
-      { $set: updatePayload },
-      { returnDocument: "after" }
+      {
+        $set: {
+          name: typeof name === "string" ? name.trim() : "",
+          email: typeof email === "string" ? email.trim().toLowerCase() : "",
+          college: typeof college === "string" ? college.trim() : "",
+          year: typeof year === "string" ? year.trim() : "",
+          role: typeof role === "string" ? role.trim() : "",
+          profileImage: typeof profileImage === "string" ? profileImage : "",
+          teamMembers: safeTeamMembers,
+          updatedAt: new Date(),
+        },
+      },
+      {
+        returnDocument: "after",
+      }
     );
 
     if (!result) {
@@ -111,10 +98,7 @@ export async function PATCH(req: NextRequest) {
     }
 
     const user = result;
-
-    if (user?.password) {
-      delete user.password;
-    }
+    if (user?.password) delete user.password;
 
     return NextResponse.json({
       ok: true,

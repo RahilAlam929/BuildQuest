@@ -1,56 +1,51 @@
-import { NextResponse } from "next/server";
-import bcrypt from "bcryptjs";
+import { NextRequest, NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
-import { signAuthToken } from "@/lib/auth";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 
-export const runtime = "nodejs";
-
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const { email, password } = body;
-
-    if (!email || !password) {
-      return NextResponse.json(
-        { ok: false, message: "Email and password are required." },
-        { status: 400 }
-      );
-    }
+    const { email, password } = await req.json();
 
     const client = await clientPromise;
-    const db = client.db("portfolio");
+    const db = client.db();
+    const users = db.collection("users");
 
-    const user = await db.collection("users").findOne({
-      email: email.toLowerCase().trim(),
+    const user = await users.findOne({
+      email: String(email).trim().toLowerCase(),
     });
 
     if (!user) {
       return NextResponse.json(
-        { ok: false, message: "Invalid credentials." },
-        { status: 401 }
+        { ok: false, message: "User not found" },
+        { status: 404 }
       );
     }
 
-    const isValid = await bcrypt.compare(password, user.password);
+    const isMatch = await bcrypt.compare(password, user.password);
 
-    if (!isValid) {
+    if (!isMatch) {
       return NextResponse.json(
-        { ok: false, message: "Invalid credentials." },
+        { ok: false, message: "Invalid credentials" },
         { status: 401 }
       );
     }
 
-    const token = signAuthToken({
-      email: user.email,
-      userId: user._id.toString(),
-    });
+    const token = jwt.sign(
+      {
+        userId: String(user._id),
+        email: user.email,
+      },
+      process.env.JWT_SECRET || "dev-secret-change-this",
+      { expiresIn: "7d" }
+    );
 
     const response = NextResponse.json({
       ok: true,
       message: "Login successful",
     });
 
-    response.cookies.set("auth_token", token, {
+    response.cookies.set("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
@@ -59,9 +54,10 @@ export async function POST(req: Request) {
     });
 
     return response;
-  } catch (error: any) {
+  } catch (error) {
+    console.error("POST /api/auth/login error:", error);
     return NextResponse.json(
-      { ok: false, message: error?.message || "Login failed" },
+      { ok: false, message: "Login failed" },
       { status: 500 }
     );
   }

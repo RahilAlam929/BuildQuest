@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import TopNav from "@/components/top-nav";
 import HeroSection from "@/components/hero-section";
 import AboutSection from "@/components/about-section";
+import OpenCollabHomeCard from "@/components/open-collab-home-card";
 import SkillsSection from "@/components/skills-section";
 import TechEventsHomeSection from "@/components/tech-events-home-section";
 import ProjectsSection from "@/components/projects-section";
@@ -75,6 +76,7 @@ export default function Home() {
         {/* Projects + links */}
         <SectionWrap id="projects" className="space-y-5">
           <ProjectsSection />
+          <OpenCollabHomeCard />
           <PlatformLinksSection />
         </SectionWrap>
 

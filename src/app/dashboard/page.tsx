@@ -21,6 +21,8 @@ import {
   Plus,
   Trash2,
   UserRound,
+  ExternalLink,
+  Send,
 } from "lucide-react";
 
 type TeamMember = {
@@ -67,6 +69,16 @@ type SubmissionType = {
   createdAt?: string;
 };
 
+type CollabRequest = {
+  _id?: string;
+  name: string;
+  email: string;
+  type: string;
+  idea: string;
+  status?: string;
+  createdAt?: string;
+};
+
 const avatarOptions = [
   "https://api.dicebear.com/7.x/bottts/svg?seed=RoboX",
   "https://api.dicebear.com/7.x/bottts/svg?seed=CyberUnit",
@@ -110,11 +122,14 @@ export default function DashboardPage() {
     sharedTeamUsers: [],
   });
 
+  const [collabRequests, setCollabRequests] = useState<CollabRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [avatar, setAvatar] = useState<string>("");
   const [showProfileEditor, setShowProfileEditor] = useState(false);
   const [savingProfile, setSavingProfile] = useState(false);
   const [profileMsg, setProfileMsg] = useState("");
+  const [inviteLoading, setInviteLoading] = useState(false);
+  const [inviteMsg, setInviteMsg] = useState("");
 
   const [editForm, setEditForm] = useState<UserType>({
     name: "",
@@ -174,7 +189,20 @@ export default function DashboardPage() {
       }
     };
 
+    const loadCollabRequests = async () => {
+      try {
+        const res = await fetch("/api/collab/list");
+        const json = await res.json();
+        if (json.ok) {
+          setCollabRequests(json.requests || []);
+        }
+      } catch (error) {
+        console.error("Collab request fetch error:", error);
+      }
+    };
+
     run();
+    loadCollabRequests();
   }, []);
 
   const stats = useMemo(() => {
@@ -318,6 +346,34 @@ export default function DashboardPage() {
       setProfileMsg(error.message || "Failed to save profile");
     } finally {
       setSavingProfile(false);
+    }
+  };
+
+  const createInviteLink = async (teamId: string) => {
+    try {
+      setInviteLoading(true);
+      setInviteMsg("");
+
+      const res = await fetch("/api/team/create-invite", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ teamId }),
+      });
+
+      const json = await res.json();
+
+      if (!res.ok || !json.ok) {
+        throw new Error(json.message || "Failed to create invite");
+      }
+
+      await navigator.clipboard.writeText(json.inviteUrl);
+      setInviteMsg("Invite link copied successfully.");
+    } catch (error: any) {
+      setInviteMsg(error.message || "Failed to create invite link");
+    } finally {
+      setInviteLoading(false);
     }
   };
 
@@ -506,6 +562,52 @@ export default function DashboardPage() {
               <div className="flex items-center gap-2 text-cyan-300">
                 <Users className="h-4 w-4" />
                 <span className="text-xs uppercase tracking-[0.16em]">
+                  Team Invite System
+                </span>
+              </div>
+
+              <h2 className="mt-3 text-2xl font-semibold">Invite teammates</h2>
+
+              <div className="mt-5 grid gap-4">
+                {data.teamIds.length === 0 ? (
+                  <EmptyState text="No team IDs available for invite generation." />
+                ) : (
+                  data.teamIds.map((teamId) => (
+                    <div
+                      key={teamId}
+                      className="card-compact flex flex-wrap items-center justify-between gap-3 rounded-2xl p-4"
+                    >
+                      <div>
+                        <div className="text-sm font-semibold text-white">{teamId}</div>
+                        <div className="mt-1 text-xs text-slate-400">
+                          Share this invite with your teammates
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => createInviteLink(teamId)}
+                        disabled={inviteLoading}
+                        className="rounded-full bg-gradient-to-r from-sky-500 via-cyan-500 to-violet-500 px-4 py-2 text-sm font-medium text-white transition hover:brightness-110 disabled:opacity-70"
+                      >
+                        {inviteLoading ? "Creating..." : "Copy Invite Link"}
+                      </button>
+                    </div>
+                  ))
+                )}
+
+                {inviteMsg && (
+                  <div className="rounded-2xl border border-cyan-400/20 bg-cyan-500/10 px-4 py-3 text-sm text-cyan-300">
+                    {inviteMsg}
+                  </div>
+                )}
+              </div>
+            </section>
+
+            <section className="section-shell p-6">
+              <div className="flex items-center gap-2 text-cyan-300">
+                <Users className="h-4 w-4" />
+                <span className="text-xs uppercase tracking-[0.16em]">
                   Team Workspace
                 </span>
               </div>
@@ -586,6 +688,49 @@ export default function DashboardPage() {
                     ))
                   )}
                 </div>
+              </div>
+            </section>
+
+            <section className="section-shell p-6">
+              <div className="flex items-center gap-2 text-cyan-300">
+                <Sparkles className="h-4 w-4" />
+                <span className="text-xs uppercase tracking-[0.16em]">
+                  Live Collaboration Requests
+                </span>
+              </div>
+
+              <h2 className="mt-3 text-2xl font-semibold">Incoming requests</h2>
+
+              <div className="mt-5 grid gap-4">
+                {collabRequests.length === 0 ? (
+                  <EmptyState text="No collaboration requests yet." />
+                ) : (
+                  collabRequests.map((item, index) => (
+                    <div
+                      key={item._id || index}
+                      className="card-compact rounded-2xl p-4"
+                    >
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div>
+                          <div className="text-sm font-semibold text-white">{item.name}</div>
+                          <div className="mt-1 text-xs text-slate-400">{item.email}</div>
+                        </div>
+
+                        <span className="chip-soft px-3 py-1 text-[10px] uppercase tracking-[0.16em] text-cyan-300">
+                          {item.type}
+                        </span>
+                      </div>
+
+                      <p className="mt-3 text-sm leading-6 text-slate-300">
+                        {item.idea}
+                      </p>
+
+                      <div className="mt-3 text-xs text-slate-500">
+                        Status: {item.status || "new"}
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             </section>
 
@@ -782,6 +927,32 @@ export default function DashboardPage() {
                         <MiniInfo label="GitHub Link" value={item.githubLink || "-"} />
                       </div>
 
+                      <div className="mt-4 flex flex-wrap gap-3">
+                        {item.projectLink && (
+                          <a
+                            href={item.projectLink}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="chip-soft inline-flex items-center gap-2 px-4 py-2 text-sm text-cyan-300 hover:text-cyan-200"
+                          >
+                            Open Live Preview
+                            <ExternalLink className="h-4 w-4" />
+                          </a>
+                        )}
+
+                        {item.githubLink && (
+                          <a
+                            href={item.githubLink}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="chip-soft inline-flex items-center gap-2 px-4 py-2 text-sm text-slate-200 hover:text-white"
+                          >
+                            View GitHub
+                            <ExternalLink className="h-4 w-4" />
+                          </a>
+                        )}
+                      </div>
+
                       {item.note && (
                         <div className="mt-4 rounded-2xl border border-slate-800 bg-slate-950/50 p-4 text-sm leading-6 text-slate-300">
                           {item.note}
@@ -825,6 +996,32 @@ export default function DashboardPage() {
                         <MiniInfo label="GitHub Link" value={item.githubLink || "-"} />
                       </div>
 
+                      <div className="mt-4 flex flex-wrap gap-3">
+                        {item.projectLink && (
+                          <a
+                            href={item.projectLink}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="chip-soft inline-flex items-center gap-2 px-4 py-2 text-sm text-cyan-300 hover:text-cyan-200"
+                          >
+                            Open Live Preview
+                            <ExternalLink className="h-4 w-4" />
+                          </a>
+                        )}
+
+                        {item.githubLink && (
+                          <a
+                            href={item.githubLink}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="chip-soft inline-flex items-center gap-2 px-4 py-2 text-sm text-slate-200 hover:text-white"
+                          >
+                            View GitHub
+                            <ExternalLink className="h-4 w-4" />
+                          </a>
+                        )}
+                      </div>
+
                       {item.note && (
                         <div className="mt-4 rounded-2xl border border-slate-800 bg-slate-950/50 p-4 text-sm leading-6 text-slate-300">
                           {item.note}
@@ -840,9 +1037,9 @@ export default function DashboardPage() {
       </main>
 
       {showProfileEditor && (
-        <div className="fixed inset-0 z-50 bg-black/60 px-4 py-8 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 px-4 py-6 backdrop-blur-sm">
           <div className="mx-auto max-w-5xl">
-            <div className="section-shell p-5 sm:p-6">
+            <div className="section-shell max-h-[88vh] overflow-y-auto p-5 sm:p-6">
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <div className="badge-pill inline-flex items-center gap-2 px-3 py-1 text-[10px] uppercase tracking-[0.18em] text-cyan-300">
@@ -973,14 +1170,20 @@ export default function DashboardPage() {
                         </h3>
                       </div>
 
-                      <button
-                        type="button"
-                        onClick={addTeamMember}
-                        className="chip-soft inline-flex items-center gap-2 px-4 py-2 text-sm text-slate-200 hover:text-cyan-300"
-                      >
-                        <Plus className="h-4 w-4" />
-                        Add Member
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <span className="chip-soft px-3 py-1 text-[10px] uppercase tracking-[0.16em] text-cyan-300">
+                          {editForm.teamMembers?.length || 0} Members
+                        </span>
+
+                        <button
+                          type="button"
+                          onClick={addTeamMember}
+                          className="chip-soft inline-flex items-center gap-2 px-4 py-2 text-sm text-slate-200 hover:text-cyan-300"
+                        >
+                          <Plus className="h-4 w-4" />
+                          Add Member
+                        </button>
+                      </div>
                     </div>
 
                     <div className="mt-4 space-y-4">
