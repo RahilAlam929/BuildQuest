@@ -44,7 +44,8 @@ export async function GET() {
     }
 
     const client = await clientPromise;
-    const db = client.db();
+    const dbName = process.env.MONGODB_DB_NAME || "portfolio";
+    const db = client.db(dbName);
 
     const user = await db.collection("users").findOne(
       { _id: new ObjectId(userId) },

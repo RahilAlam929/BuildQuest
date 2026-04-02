@@ -1,76 +1,120 @@
 import { NextRequest, NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
-import bcrypt from "bcryptjs";
+import { cookies } from "next/headers";
 import jwt from "jsonwebtoken";
+import { ObjectId } from "mongodb";
 
-export async function POST(req: NextRequest) {
+type JwtPayload = {
+  userId?: string;
+  id?: string;
+  email?: string;
+};
+
+function getUserIdFromToken(token: string): string | null {
   try {
-    const { email, password } = await req.json();
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET || "dev-secret-change-this"
+    ) as JwtPayload;
 
-    if (!email || !password) {
+    return decoded.userId || decoded.id || null;
+  } catch (error) {
+    console.error("JWT verify error:", error);
+    return null;
+  }
+}
+
+export async function PATCH(req: NextRequest) {
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("token")?.value;
+
+    if (!token) {
       return NextResponse.json(
-        { ok: false, message: "Email and password are required" },
-        { status: 400 }
+        { ok: false, message: "Unauthorized: token missing" },
+        { status: 401 }
       );
     }
 
-    const normalizedEmail = String(email).trim().toLowerCase();
+    const userId = getUserIdFromToken(token);
+
+    if (!userId) {
+      return NextResponse.json(
+        { ok: false, message: "Unauthorized: invalid token" },
+        { status: 401 }
+      );
+    }
+
+    const body = await req.json();
+
+    const {
+      name,
+      email,
+      college,
+      year,
+      role,
+      profileImage,
+      teamMembers,
+    } = body;
+
+    const safeTeamMembers = Array.isArray(teamMembers)
+      ? teamMembers.map((member: any) => ({
+          name: String(member.name || "").trim(),
+          email: String(member.email || "").trim().toLowerCase(),
+          role: String(member.role || "").trim(),
+          year: String(member.year || "").trim(),
+          college: String(member.college || "").trim(),
+        }))
+      : [];
 
     const client = await clientPromise;
-    const db = client.db(process.env.MONGODB_DB_NAME || "portfolio");
+    const dbName = process.env.MONGODB_DB_NAME || "portfolio";
+    const db = client.db(dbName);
     const users = db.collection("users");
 
-    const user = await users.findOne({
-      email: normalizedEmail,
-    });
+    console.log("PROFILE DB NAME:", dbName);
+    console.log("PROFILE USER ID:", userId);
 
-    console.log("LOGIN DB:", process.env.MONGODB_DB_NAME || "portfolio");
-    console.log("LOGIN EMAIL:", normalizedEmail);
-    console.log("FOUND USER:", user ? "YES" : "NO");
+    const result = await users.findOneAndUpdate(
+      { _id: new ObjectId(userId) },
+      {
+        $set: {
+          name: typeof name === "string" ? name.trim() : "",
+          email: typeof email === "string" ? email.trim().toLowerCase() : "",
+          college: typeof college === "string" ? college.trim() : "",
+          year: typeof year === "string" ? year.trim() : "",
+          role: typeof role === "string" ? role.trim() : "",
+          profileImage: typeof profileImage === "string" ? profileImage : "",
+          teamMembers: safeTeamMembers,
+          updatedAt: new Date(),
+        },
+      },
+      {
+        returnDocument: "after",
+      }
+    );
 
-    if (!user) {
+    if (!result) {
       return NextResponse.json(
         { ok: false, message: "User not found" },
         { status: 404 }
       );
     }
 
-    const isMatch = await bcrypt.compare(password, user.password);
-
-    if (!isMatch) {
-      return NextResponse.json(
-        { ok: false, message: "Invalid credentials" },
-        { status: 401 }
-      );
+    const user = result;
+    if ((user as any)?.password) {
+      delete (user as any).password;
     }
 
-    const token = jwt.sign(
-      {
-        userId: String(user._id),
-        email: user.email,
-      },
-      process.env.JWT_SECRET || "dev-secret-change-this",
-      { expiresIn: "7d" }
-    );
-
-    const response = NextResponse.json({
+    return NextResponse.json({
       ok: true,
-      message: "Login successful",
+      message: "Profile updated successfully",
+      user,
     });
-
-    response.cookies.set("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      path: "/",
-      maxAge: 60 * 60 * 24 * 7,
-    });
-
-    return response;
   } catch (error) {
-    console.error("POST /api/auth/login error:", error);
+    console.error("PATCH /api/auth/profile error:", error);
     return NextResponse.json(
-      { ok: false, message: "Login failed" },
+      { ok: false, message: "Failed to update profile" },
       { status: 500 }
     );
   }

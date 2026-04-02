@@ -60,7 +60,7 @@ export async function PATCH(req: NextRequest) {
     const safeTeamMembers = Array.isArray(teamMembers)
       ? teamMembers.map((member: any) => ({
           name: String(member.name || "").trim(),
-          email: String(member.email || "").trim(),
+          email: String(member.email || "").trim().toLowerCase(),
           role: String(member.role || "").trim(),
           year: String(member.year || "").trim(),
           college: String(member.college || "").trim(),
@@ -68,7 +68,8 @@ export async function PATCH(req: NextRequest) {
       : [];
 
     const client = await clientPromise;
-    const db = client.db();
+    const dbName = process.env.MONGODB_DB_NAME || "portfolio";
+    const db = client.db(dbName);
     const users = db.collection("users");
 
     const result = await users.findOneAndUpdate(
@@ -98,7 +99,9 @@ export async function PATCH(req: NextRequest) {
     }
 
     const user = result;
-    if (user?.password) delete user.password;
+    if ((user as any)?.password) {
+      delete (user as any).password;
+    }
 
     return NextResponse.json({
       ok: true,
