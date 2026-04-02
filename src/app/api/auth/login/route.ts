@@ -17,11 +17,12 @@ export async function POST(req: NextRequest) {
     const normalizedEmail = String(email).trim().toLowerCase();
 
     const client = await clientPromise;
-    const db = client.db();
+    const db = client.db(process.env.MONGODB_DB_NAME || "portfolio");
     const users = db.collection("users");
 
     const user = await users.findOne({ email: normalizedEmail });
 
+    console.log("LOGIN DB:", process.env.MONGODB_DB_NAME || "portfolio");
     console.log("LOGIN EMAIL:", normalizedEmail);
     console.log("FOUND USER:", user ? "yes" : "no");
 
