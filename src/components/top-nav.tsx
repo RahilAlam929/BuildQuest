@@ -32,7 +32,6 @@ export default function TopNav() {
       setScrolled(window.scrollY > 18);
 
       const sectionItems = navItems.filter((item) => item.type === "section");
-
       let currentSection = sectionItems[0]?.href ?? "#about";
 
       for (const item of sectionItems) {
@@ -40,9 +39,7 @@ export default function TopNav() {
         if (!el) continue;
 
         const rect = el.getBoundingClientRect();
-        if (rect.top <= 140) {
-          currentSection = item.href;
-        }
+        if (rect.top <= 140) currentSection = item.href;
       }
 
       setActiveSection(currentSection);
@@ -57,9 +54,7 @@ export default function TopNav() {
     const onPointerDown = (e: PointerEvent) => {
       const el = containerRef.current;
       if (!el) return;
-      if (open && !el.contains(e.target as Node)) {
-        setOpen(false);
-      }
+      if (open && !el.contains(e.target as Node)) setOpen(false);
     };
 
     window.addEventListener("pointerdown", onPointerDown, true);
@@ -76,12 +71,7 @@ export default function TopNav() {
   }, []);
 
   useEffect(() => {
-    if (open) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-
+    document.body.style.overflow = open ? "hidden" : "";
     return () => {
       document.body.style.overflow = "";
     };
@@ -91,7 +81,7 @@ export default function TopNav() {
     const el = document.querySelector(href) as HTMLElement | null;
     if (!el) return;
 
-    const yOffset = -100;
+    const yOffset = -96;
     const y = el.getBoundingClientRect().top + window.scrollY + yOffset;
 
     window.history.replaceState(null, "", href);
@@ -101,12 +91,12 @@ export default function TopNav() {
   const handleNavClick = (href: string) => {
     setOpen(false);
     requestAnimationFrame(() => {
-      setTimeout(() => scrollToId(href), 120);
+      setTimeout(() => scrollToId(href), 80);
     });
   };
 
-  const navItemBaseClass =
-    "relative rounded-full border px-3 py-1 text-[11px] uppercase tracking-[0.16em] transition duration-300";
+  const navBase =
+    "relative inline-flex items-center rounded-full border px-3 py-1.5 text-[11px] font-medium uppercase tracking-[0.14em] transition duration-300";
 
   return (
     <>
@@ -116,49 +106,46 @@ export default function TopNav() {
         aria-label="Main navigation"
         initial={{ y: -24, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.55, ease: "easeOut" }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
         className={[
-          "fixed left-1/2 z-50 mx-auto max-w-6xl -translate-x-1/2",
-          "rounded-2xl border backdrop-blur-xl transition-all duration-300",
+          "fixed left-1/2 z-50 -translate-x-1/2 rounded-[22px] border backdrop-blur-xl transition-all duration-300",
           scrolled
-            ? "top-3 w-[92%] sm:w-[90%] md:w-[88%]"
-            : "top-4 w-[96%] sm:w-[92%] md:w-[90%]",
-          scrolled
-            ? "border-slate-700/60 bg-slate-950/75 shadow-[0_10px_40px_rgba(0,0,0,0.45)]"
-            : "border-slate-800/70 bg-slate-950/45 shadow-[0_10px_30px_rgba(0,0,0,0.25)]",
+            ? "top-3 w-[92%] max-w-7xl border-white/10 bg-slate-950/78 shadow-[0_20px_50px_rgba(2,6,23,0.55)]"
+            : "top-4 w-[95%] max-w-7xl border-white/8 bg-slate-950/58 shadow-[0_14px_40px_rgba(2,6,23,0.35)]",
         ].join(" ")}
       >
         <div
           className={[
-            "flex items-center justify-between gap-3 transition-all duration-300",
+            "flex items-center justify-between gap-3",
             scrolled ? "px-4 py-2 sm:px-5" : "px-4 py-2.5 sm:px-5",
           ].join(" ")}
         >
-          <div className="flex min-w-0 items-center gap-2">
-            <div className="relative h-8 w-8 shrink-0 rounded-full bg-sky-400/30 ring-1 ring-sky-300/20">
-              <div className="absolute inset-1 rounded-full bg-slate-950/90" />
-              <div className="absolute inset-[6px] rounded-full bg-gradient-to-br from-sky-400 via-cyan-400 to-violet-500" />
+          {/* Brand */}
+          <Link href="/" className="flex min-w-0 items-center gap-3">
+            <div className="relative h-9 w-9 shrink-0 rounded-full border border-sky-400/20 bg-sky-500/10">
+              <div className="absolute inset-[6px] rounded-full bg-gradient-to-br from-sky-400 via-cyan-400 to-violet-500 shadow-[0_0_24px_rgba(56,189,248,0.35)]" />
             </div>
 
-            <div className="flex min-w-0 flex-col leading-none">
-              <span className="truncate text-xs font-semibold uppercase tracking-[0.18em] text-sky-300/85">
+            <div className="min-w-0 leading-none">
+              <div className="truncate text-[11px] font-semibold uppercase tracking-[0.22em] text-sky-300/90">
                 MD RAHIL
-              </span>
-              <span className="truncate text-[11px] text-slate-400">
-                Full Stack Web Developer · Robotics · AI
-              </span>
+              </div>
+              <div className="truncate text-[11px] text-slate-400">
+                Full Stack · AI · Robotics
+              </div>
             </div>
-          </div>
+          </Link>
 
+          {/* Desktop */}
           <div className="hidden items-center gap-3 sm:flex">
-            <nav className="hidden items-center gap-2 text-xs font-medium text-slate-300 lg:flex">
+            <nav className="hidden items-center gap-2 lg:flex">
               {navItems.map((item) => {
                 if (item.type === "page") {
                   return (
                     <Link
                       key={item.href}
                       href={item.href}
-                      className={`${navItemBaseClass} border-slate-800 bg-slate-900/40 text-slate-200/85 hover:border-sky-400 hover:text-sky-300`}
+                      className={`${navBase} border-white/8 bg-white/[0.03] text-slate-200/90 hover:border-sky-400/30 hover:text-sky-300`}
                     >
                       {item.label}
                     </Link>
@@ -172,10 +159,10 @@ export default function TopNav() {
                     key={item.href}
                     type="button"
                     onClick={() => handleNavClick(item.href)}
-                    className={`${navItemBaseClass} ${
+                    className={`${navBase} ${
                       isActive
-                        ? "border-sky-400/70 bg-sky-500/10 text-sky-300"
-                        : "border-slate-800 bg-slate-900/40 text-slate-200/85 hover:border-sky-400 hover:text-sky-300"
+                        ? "border-sky-400/30 bg-sky-500/10 text-sky-300 shadow-[0_0_24px_rgba(56,189,248,0.16)]"
+                        : "border-white/8 bg-white/[0.03] text-slate-200/90 hover:border-sky-400/30 hover:text-sky-300"
                     } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400`}
                   >
                     {item.label}
@@ -187,7 +174,7 @@ export default function TopNav() {
             <div className="flex items-center gap-2">
               <Link
                 href="/auth/login"
-                className="inline-flex h-9 items-center justify-center rounded-full border border-slate-700 bg-slate-900/40 px-4 text-xs font-medium text-slate-200 transition hover:border-sky-400 hover:text-sky-300"
+                className="inline-flex h-9 items-center justify-center rounded-full border border-white/10 bg-white/[0.03] px-4 text-xs font-medium text-slate-200 transition hover:border-sky-400/30 hover:text-sky-300"
               >
                 Login
               </Link>
@@ -201,17 +188,18 @@ export default function TopNav() {
 
               <Link
                 href="/dashboard"
-                className="inline-flex h-9 items-center justify-center rounded-full border border-cyan-500/20 bg-cyan-500/10 px-4 text-xs font-medium text-cyan-300 transition hover:bg-cyan-500/20"
+                className="inline-flex h-9 items-center justify-center rounded-full border border-cyan-400/20 bg-cyan-500/10 px-4 text-xs font-medium text-cyan-300 transition hover:bg-cyan-500/20"
               >
                 Dashboard
               </Link>
             </div>
           </div>
 
+          {/* Mobile Button */}
           <button
             type="button"
             onClick={() => setOpen((v) => !v)}
-            className="relative inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-800 bg-slate-900/60 hover:border-sky-400/60 hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 sm:hidden"
+            className="relative inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/[0.04] transition hover:border-sky-400/40 hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 sm:hidden"
             aria-label={open ? "Close menu" : "Open menu"}
             aria-expanded={open}
             aria-controls="mobile-nav"
@@ -219,23 +207,24 @@ export default function TopNav() {
             <div className="relative h-5 w-6">
               <motion.span
                 animate={open ? { rotate: 45, y: 8 } : { rotate: 0, y: 0 }}
-                transition={{ duration: 0.25, ease: "easeOut" }}
+                transition={{ duration: 0.24 }}
                 className="absolute left-0 top-0 h-[2px] w-full rounded bg-slate-100"
               />
               <motion.span
                 animate={open ? { opacity: 0 } : { opacity: 1 }}
-                transition={{ duration: 0.2, ease: "easeOut" }}
+                transition={{ duration: 0.18 }}
                 className="absolute left-0 top-2 h-[2px] w-full rounded bg-slate-100"
               />
               <motion.span
                 animate={open ? { rotate: -45, y: -8 } : { rotate: 0, y: 0 }}
-                transition={{ duration: 0.25, ease: "easeOut" }}
+                transition={{ duration: 0.24 }}
                 className="absolute left-0 top-4 h-[2px] w-full rounded bg-slate-100"
               />
             </div>
           </button>
         </div>
 
+        {/* Mobile Menu */}
         <AnimatePresence>
           {open && (
             <motion.div
@@ -243,19 +232,19 @@ export default function TopNav() {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.28, ease: "easeOut" }}
+              transition={{ duration: 0.25, ease: "easeOut" }}
               className="sm:hidden"
             >
               <div className="px-4 pb-4">
-                <div className="w-full rounded-2xl border border-slate-700/60 bg-slate-950/95 p-3 shadow-2xl">
-                  <ul className="flex flex-col gap-1">
+                <div className="rounded-[20px] border border-white/10 bg-slate-950/96 p-3 shadow-2xl">
+                  <ul className="flex flex-col gap-1.5">
                     {navItems.map((item) => (
                       <li key={item.href}>
                         {item.type === "page" ? (
                           <Link
                             href={item.href}
                             onClick={() => setOpen(false)}
-                            className="block w-full rounded-xl px-3 py-3 text-left text-sm font-medium text-slate-100 transition hover:bg-slate-900/50 hover:text-sky-300"
+                            className="block w-full rounded-xl px-3 py-3 text-left text-sm font-medium text-slate-100 transition hover:bg-white/[0.04] hover:text-sky-300"
                           >
                             {item.label}
                           </Link>
@@ -266,7 +255,7 @@ export default function TopNav() {
                             className={`w-full rounded-xl px-3 py-3 text-left text-sm font-medium transition ${
                               activeSection === item.href
                                 ? "bg-sky-500/10 text-sky-300"
-                                : "text-slate-100 hover:bg-slate-900/50 hover:text-sky-300"
+                                : "text-slate-100 hover:bg-white/[0.04] hover:text-sky-300"
                             }`}
                           >
                             {item.label}
@@ -276,11 +265,11 @@ export default function TopNav() {
                     ))}
                   </ul>
 
-                  <div className="mt-3 grid gap-2 border-t border-slate-800/70 pt-3">
+                  <div className="mt-3 grid gap-2 border-t border-white/8 pt-3">
                     <Link
                       href="/auth/login"
                       onClick={() => setOpen(false)}
-                      className="inline-flex h-11 items-center justify-center rounded-xl border border-slate-700 bg-slate-900/50 px-4 text-sm font-medium text-slate-200 transition hover:border-sky-400 hover:text-sky-300"
+                      className="inline-flex h-11 items-center justify-center rounded-xl border border-white/10 bg-white/[0.03] px-4 text-sm font-medium text-slate-200 transition hover:border-sky-400/30 hover:text-sky-300"
                     >
                       Login
                     </Link>
@@ -296,7 +285,7 @@ export default function TopNav() {
                     <Link
                       href="/dashboard"
                       onClick={() => setOpen(false)}
-                      className="inline-flex h-11 items-center justify-center rounded-xl border border-cyan-500/20 bg-cyan-500/10 px-4 text-sm font-medium text-cyan-300 transition hover:bg-cyan-500/20"
+                      className="inline-flex h-11 items-center justify-center rounded-xl border border-cyan-400/20 bg-cyan-500/10 px-4 text-sm font-medium text-cyan-300 transition hover:bg-cyan-500/20"
                     >
                       Dashboard
                     </Link>
@@ -315,7 +304,7 @@ export default function TopNav() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-40 bg-black/40 sm:hidden"
+            className="fixed inset-0 z-40 bg-black/45 sm:hidden"
           />
         )}
       </AnimatePresence>

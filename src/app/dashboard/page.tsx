@@ -1,21 +1,36 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowUpRight,
   CalendarDays,
+  Camera,
   CheckCircle2,
   FolderKanban,
   Layers3,
   Lightbulb,
   Mail,
+  Pencil,
   Sparkles,
   Target,
   Trophy,
+  Upload,
   Users,
-  UserCircle2,
+  X,
+  Plus,
+  Trash2,
+  UserRound,
 } from "lucide-react";
+
+type TeamMember = {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  year: string;
+  college: string;
+};
 
 type UserType = {
   name: string;
@@ -24,6 +39,7 @@ type UserType = {
   year?: string;
   role?: string;
   profileImage?: string;
+  teamMembers?: TeamMember[];
 };
 
 type RegistrationType = {
@@ -45,6 +61,28 @@ type SubmissionType = {
   createdAt?: string;
 };
 
+const avatarOptions = [
+  "https://api.dicebear.com/7.x/adventurer/svg?seed=Nova",
+  "https://api.dicebear.com/7.x/adventurer/svg?seed=Rahil",
+  "https://api.dicebear.com/7.x/adventurer/svg?seed=Orbit",
+  "https://api.dicebear.com/7.x/adventurer/svg?seed=Pixel",
+  "https://api.dicebear.com/7.x/adventurer/svg?seed=Builder",
+  "https://api.dicebear.com/7.x/adventurer/svg?seed=Cyber",
+  "https://api.dicebear.com/7.x/thumbs/svg?seed=Spark",
+  "https://api.dicebear.com/7.x/thumbs/svg?seed=Astro",
+];
+
+function createEmptyMember(): TeamMember {
+  return {
+    id: Math.random().toString(36).slice(2, 10),
+    name: "",
+    email: "",
+    role: "",
+    year: "",
+    college: "",
+  };
+}
+
 export default function DashboardPage() {
   const [data, setData] = useState<{
     user: UserType | null;
@@ -57,6 +95,19 @@ export default function DashboardPage() {
   });
 
   const [loading, setLoading] = useState(true);
+  const [avatar, setAvatar] = useState<string>("");
+  const [showProfileEditor, setShowProfileEditor] = useState(false);
+  const [editForm, setEditForm] = useState<UserType>({
+    name: "",
+    email: "",
+    college: "",
+    year: "",
+    role: "",
+    profileImage: "",
+    teamMembers: [],
+  });
+
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     const run = async () => {
@@ -73,11 +124,25 @@ export default function DashboardPage() {
         const json = await res.json();
 
         if (json.ok) {
+          const user = json.user || null;
+
           setData({
-            user: json.user || null,
+            user,
             registrations: json.registrations || [],
             submissions: json.submissions || [],
           });
+
+          setEditForm({
+            name: user?.name || "",
+            email: user?.email || "",
+            college: user?.college || "",
+            year: user?.year || "",
+            role: user?.role || "",
+            profileImage: user?.profileImage || "",
+            teamMembers: user?.teamMembers || [],
+          });
+
+          setAvatar(user?.profileImage || avatarOptions[1]);
         }
       } catch (error) {
         console.error("Dashboard fetch error:", error);
@@ -131,10 +196,61 @@ export default function DashboardPage() {
       .slice(0, 6);
   }, [data.registrations, data.submissions]);
 
+  const saveProfileLocally = () => {
+    setData((prev) => ({
+      ...prev,
+      user: {
+        ...(prev.user as UserType),
+        ...editForm,
+        profileImage: avatar || editForm.profileImage,
+        teamMembers: editForm.teamMembers || [],
+      },
+    }));
+    setShowProfileEditor(false);
+  };
+
+  const handleAvatarUpload = (file: File | undefined) => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = String(reader.result || "");
+      setAvatar(result);
+      setEditForm((prev) => ({ ...prev, profileImage: result }));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const addTeamMember = () => {
+    setEditForm((prev) => ({
+      ...prev,
+      teamMembers: [...(prev.teamMembers || []), createEmptyMember()],
+    }));
+  };
+
+  const removeTeamMember = (id: string) => {
+    setEditForm((prev) => ({
+      ...prev,
+      teamMembers: (prev.teamMembers || []).filter((member) => member.id !== id),
+    }));
+  };
+
+  const updateTeamMember = (
+    id: string,
+    field: keyof Omit<TeamMember, "id">,
+    value: string
+  ) => {
+    setEditForm((prev) => ({
+      ...prev,
+      teamMembers: (prev.teamMembers || []).map((member) =>
+        member.id === id ? { ...member, [field]: value } : member
+      ),
+    }));
+  };
+
   if (loading) {
     return (
       <main className="mx-auto min-h-screen max-w-7xl px-4 py-12 text-white">
-        <div className="rounded-[32px] border border-slate-800/70 bg-slate-950/60 p-8">
+        <div className="section-shell p-8">
           <div className="text-lg font-semibold">Loading dashboard...</div>
           <p className="mt-2 text-sm text-slate-400">
             Fetching your profile, registrations, and submissions.
@@ -147,7 +263,7 @@ export default function DashboardPage() {
   if (!data.user) {
     return (
       <main className="mx-auto min-h-screen max-w-5xl px-4 py-12 text-white">
-        <div className="rounded-[32px] border border-slate-800/70 bg-slate-950/60 p-8 text-center">
+        <div className="section-shell p-8 text-center">
           <h1 className="text-2xl font-semibold">Please login first</h1>
           <p className="mt-3 text-sm text-slate-400">
             Your dashboard becomes available after login.
@@ -156,7 +272,7 @@ export default function DashboardPage() {
           <div className="mt-6 flex justify-center gap-3">
             <Link
               href="/auth/login"
-              className="rounded-full border border-slate-700 bg-slate-900/50 px-5 py-2.5 text-sm text-slate-200 transition hover:border-sky-400 hover:text-sky-300"
+              className="chip-soft px-5 py-2.5 text-sm text-slate-200 transition hover:border-sky-400 hover:text-sky-300"
             >
               Login
             </Link>
@@ -174,199 +290,104 @@ export default function DashboardPage() {
   }
 
   return (
-    <main className="mx-auto min-h-screen max-w-7xl px-4 py-10 text-white">
-      <div className="grid gap-6 xl:grid-cols-[340px_1fr]">
-        {/* Sidebar */}
-        <aside className="space-y-6">
-          <section className="rounded-[32px] border border-slate-800/70 bg-slate-950/70 p-6 shadow-[0_0_0_1px_rgba(15,23,42,0.45),0_18px_40px_rgba(2,6,23,0.36)]">
-            <div className="flex flex-col items-center text-center">
-              {data.user.profileImage ? (
-                <img
-                  src={data.user.profileImage}
-                  alt={data.user.name}
-                  className="h-24 w-24 rounded-full object-cover"
-                />
-              ) : (
-                <div className="flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-r from-sky-500 via-cyan-500 to-violet-500 text-3xl font-bold">
-                  {data.user.name?.charAt(0)?.toUpperCase() || "U"}
+    <>
+      <main className="mx-auto min-h-screen max-w-7xl px-4 py-10 text-white">
+        <div className="grid gap-6 xl:grid-cols-[360px_1fr]">
+          <aside className="space-y-6">
+            <section className="section-shell p-6">
+              <div className="flex flex-col items-center text-center">
+                <div className="relative">
+                  <img
+                    src={avatar || data.user.profileImage || avatarOptions[0]}
+                    alt={data.user.name}
+                    className="h-28 w-28 rounded-full border border-white/10 object-cover bg-slate-900"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowProfileEditor(true)}
+                    className="absolute bottom-0 right-0 inline-flex h-10 w-10 items-center justify-center rounded-full border border-cyan-400/20 bg-cyan-500/10 text-cyan-300 transition hover:bg-cyan-500/20"
+                  >
+                    <Camera className="h-4 w-4" />
+                  </button>
                 </div>
-              )}
 
-              <h1 className="mt-4 text-2xl font-semibold">{data.user.name}</h1>
-              <div className="mt-1 inline-flex items-center gap-2 text-sm text-slate-400">
-                <Mail className="h-4 w-4" />
-                {data.user.email}
-              </div>
+                <h1 className="mt-4 text-2xl font-semibold">{data.user.name}</h1>
+                <div className="mt-1 inline-flex items-center gap-2 text-sm text-slate-400">
+                  <Mail className="h-4 w-4" />
+                  {data.user.email}
+                </div>
 
-              <div className="mt-5 w-full space-y-3 text-left">
-                <InfoCard label="College / Organization" value={data.user.college || "-"} />
-                <InfoCard label="Year" value={data.user.year || "-"} />
-                <InfoCard label="Role" value={data.user.role || "-"} />
-              </div>
-            </div>
-          </section>
-
-          <section className="rounded-[32px] border border-slate-800/70 bg-slate-950/70 p-6">
-            <div className="flex items-center gap-2 text-cyan-300">
-              <Sparkles className="h-4 w-4" />
-              <span className="text-xs uppercase tracking-[0.16em]">
-                Quick Actions
-              </span>
-            </div>
-
-            <div className="mt-5 grid gap-3">
-              <Link
-                href="/#challenge"
-                className="inline-flex items-center justify-between rounded-2xl border border-slate-800 bg-slate-900/40 px-4 py-3 text-sm text-slate-200 transition hover:border-cyan-400 hover:text-cyan-300"
-              >
-                Explore Challenges
-                <ArrowUpRight className="h-4 w-4" />
-              </Link>
-
-              <Link
-                href="/challenge/register?type=weekly-debugging"
-                className="inline-flex items-center justify-between rounded-2xl border border-slate-800 bg-slate-900/40 px-4 py-3 text-sm text-slate-200 transition hover:border-cyan-400 hover:text-cyan-300"
-              >
-                New Registration
-                <ArrowUpRight className="h-4 w-4" />
-              </Link>
-
-              <Link
-                href="/challenge/submit?type=weekly-debugging"
-                className="inline-flex items-center justify-between rounded-2xl border border-slate-800 bg-slate-900/40 px-4 py-3 text-sm text-slate-200 transition hover:border-cyan-400 hover:text-cyan-300"
-              >
-                Submit Solution
-                <ArrowUpRight className="h-4 w-4" />
-              </Link>
-
-              <Link
-                href="/idea-forge"
-                className="inline-flex items-center justify-between rounded-2xl border border-slate-800 bg-slate-900/40 px-4 py-3 text-sm text-slate-200 transition hover:border-cyan-400 hover:text-cyan-300"
-              >
-                Explore Idea Forge
-                <ArrowUpRight className="h-4 w-4" />
-              </Link>
-            </div>
-          </section>
-        </aside>
-
-        {/* Main */}
-        <section className="space-y-6">
-          {/* Stats */}
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            <StatCard
-              icon={<Layers3 className="h-5 w-5" />}
-              title="Registrations"
-              value={String(stats.registrations)}
-              accent="text-sky-300"
-            />
-            <StatCard
-              icon={<FolderKanban className="h-5 w-5" />}
-              title="Submissions"
-              value={String(stats.submissions)}
-              accent="text-violet-300"
-            />
-            <StatCard
-              icon={<Target className="h-5 w-5" />}
-              title="Challenges Joined"
-              value={String(stats.uniqueChallenges)}
-              accent="text-cyan-300"
-            />
-            <StatCard
-              icon={<Users className="h-5 w-5" />}
-              title="Active Teams"
-              value={String(stats.activeTeams)}
-              accent="text-emerald-300"
-            />
-          </div>
-
-          {/* Recommended Ideas */}
-          <section className="rounded-[32px] border border-slate-800/70 bg-slate-950/70 p-6">
-            <div className="flex items-center gap-2 text-cyan-300">
-              <Lightbulb className="h-4 w-4" />
-              <span className="text-xs uppercase tracking-[0.16em]">
-                Recommended Ideas
-              </span>
-            </div>
-
-            <h2 className="mt-3 text-2xl font-semibold">Build next from Idea Forge</h2>
-
-            <div className="mt-5 grid gap-4 md:grid-cols-3">
-              {[
-                {
-                  title: "AI Resume Reviewer",
-                  category: "AI / ML",
-                  level: "Intermediate",
-                },
-                {
-                  title: "Student Club Dashboard",
-                  category: "Frontend",
-                  level: "Intermediate",
-                },
-                {
-                  title: "Habit Tracker App",
-                  category: "Mobile",
-                  level: "Beginner",
-                },
-              ].map((item) => (
-                <Link
-                  key={item.title}
-                  href="/idea-forge"
-                  className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4 transition hover:border-cyan-400/30"
+                <button
+                  type="button"
+                  onClick={() => setShowProfileEditor(true)}
+                  className="chip-soft mt-4 inline-flex items-center gap-2 px-4 py-2 text-sm text-slate-200 hover:text-cyan-300"
                 >
-                  <div className="text-sm font-semibold text-white">{item.title}</div>
-                  <div className="mt-2 text-xs uppercase tracking-[0.16em] text-slate-500">
-                    {item.category} • {item.level}
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </section>
+                  <Pencil className="h-4 w-4" />
+                  Edit Profile
+                </button>
 
-          {/* Activity + Progress */}
-          <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-            <section className="rounded-[32px] border border-slate-800/70 bg-slate-950/70 p-6">
+                <div className="mt-5 w-full space-y-3 text-left">
+                  <InfoCard label="College / Organization" value={data.user.college || "-"} />
+                  <InfoCard label="Year" value={data.user.year || "-"} />
+                  <InfoCard label="Role" value={data.user.role || "-"} />
+                  <InfoCard
+                    label="Team Members"
+                    value={String(data.user.teamMembers?.length || 0)}
+                  />
+                </div>
+              </div>
+            </section>
+
+            <section className="section-shell p-6">
               <div className="flex items-center gap-2 text-cyan-300">
-                <CalendarDays className="h-4 w-4" />
+                <Sparkles className="h-4 w-4" />
                 <span className="text-xs uppercase tracking-[0.16em]">
-                  Recent Activity
+                  Quick Actions
                 </span>
               </div>
 
-              <h2 className="mt-3 text-2xl font-semibold">Latest updates</h2>
+              <div className="mt-5 grid gap-3">
+                <QuickAction href="/#challenge" text="Explore Challenges" />
+                <QuickAction
+                  href="/challenge/register?type=weekly-debugging"
+                  text="New Registration"
+                />
+                <QuickAction
+                  href="/challenge/submit?type=weekly-debugging"
+                  text="Submit Solution"
+                />
+                <QuickAction href="/idea-forge" text="Explore Idea Forge" />
+              </div>
+            </section>
 
-              <div className="mt-5 space-y-4">
-                {recentActivity.length === 0 ? (
-                  <EmptyState text="No activity found yet." />
+            <section className="section-shell p-6">
+              <div className="flex items-center gap-2 text-cyan-300">
+                <Users className="h-4 w-4" />
+                <span className="text-xs uppercase tracking-[0.16em]">
+                  Team Members
+                </span>
+              </div>
+
+              <div className="mt-4 space-y-3">
+                {(data.user.teamMembers || []).length === 0 ? (
+                  <EmptyState text="No team members added yet." />
                 ) : (
-                  recentActivity.map((item, index) => (
-                    <div
-                      key={`${item.type}-${item.teamId}-${index}`}
-                      className="flex items-start gap-4 rounded-2xl border border-slate-800 bg-slate-900/35 p-4"
-                    >
-                      <div
-                        className={`mt-1 inline-flex h-9 w-9 items-center justify-center rounded-full ${
-                          item.type === "registration"
-                            ? "bg-sky-500/10 text-sky-300"
-                            : "bg-emerald-500/10 text-emerald-300"
-                        }`}
-                      >
-                        {item.type === "registration" ? (
-                          <Users className="h-4 w-4" />
-                        ) : (
-                          <CheckCircle2 className="h-4 w-4" />
-                        )}
-                      </div>
-
-                      <div className="min-w-0">
-                        <div className="text-sm font-semibold text-white">
-                          {item.type === "registration"
-                            ? "New Registration"
-                            : "Submission Completed"}
+                  (data.user.teamMembers || []).map((member) => (
+                    <div key={member.id} className="card-compact rounded-2xl p-4">
+                      <div className="flex items-start gap-3">
+                        <div className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/[0.03] text-slate-300">
+                          <UserRound className="h-4 w-4" />
                         </div>
-                        <div className="mt-1 text-sm text-slate-300">{item.title}</div>
-                        <div className="mt-1 text-xs uppercase tracking-[0.16em] text-slate-500">
-                          {item.subtitle}
+                        <div className="min-w-0">
+                          <div className="text-sm font-semibold text-white">
+                            {member.name || "Unnamed Member"}
+                          </div>
+                          <div className="mt-1 text-xs text-slate-400">
+                            {member.email || "-"}
+                          </div>
+                          <div className="mt-2 text-xs uppercase tracking-[0.14em] text-cyan-300">
+                            {member.role || "Role not set"}
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -374,122 +395,498 @@ export default function DashboardPage() {
                 )}
               </div>
             </section>
+          </aside>
 
-            <section className="rounded-[32px] border border-slate-800/70 bg-slate-950/70 p-6">
-              <div className="flex items-center gap-2 text-amber-300">
-                <Trophy className="h-4 w-4" />
+          <section className="space-y-6">
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              <StatCard
+                icon={<Layers3 className="h-5 w-5" />}
+                title="Registrations"
+                value={String(stats.registrations)}
+                accent="text-sky-300"
+              />
+              <StatCard
+                icon={<FolderKanban className="h-5 w-5" />}
+                title="Submissions"
+                value={String(stats.submissions)}
+                accent="text-violet-300"
+              />
+              <StatCard
+                icon={<Target className="h-5 w-5" />}
+                title="Challenges Joined"
+                value={String(stats.uniqueChallenges)}
+                accent="text-cyan-300"
+              />
+              <StatCard
+                icon={<Users className="h-5 w-5" />}
+                title="Active Teams"
+                value={String(stats.activeTeams)}
+                accent="text-emerald-300"
+              />
+            </div>
+
+            <section className="section-shell p-6">
+              <div className="flex items-center gap-2 text-cyan-300">
+                <Lightbulb className="h-4 w-4" />
                 <span className="text-xs uppercase tracking-[0.16em]">
-                  Progress Snapshot
+                  Recommended Ideas
                 </span>
               </div>
 
-              <h2 className="mt-3 text-2xl font-semibold">Your build status</h2>
+              <h2 className="mt-3 text-2xl font-semibold">Build next from Idea Forge</h2>
 
-              <div className="mt-5 space-y-4">
-                <ProgressRow
-                  label="Registration Completion"
-                  current={stats.registrations}
-                  total={3}
-                />
-                <ProgressRow
-                  label="Submission Completion"
-                  current={stats.submissions}
-                  total={3}
-                />
-                <ProgressRow
-                  label="Challenge Participation"
-                  current={stats.uniqueChallenges}
-                  total={3}
-                />
+              <div className="mt-5 grid gap-4 md:grid-cols-3">
+                {[
+                  {
+                    title: "AI Resume Reviewer",
+                    category: "AI / ML",
+                    level: "Intermediate",
+                  },
+                  {
+                    title: "Student Club Dashboard",
+                    category: "Frontend",
+                    level: "Intermediate",
+                  },
+                  {
+                    title: "Habit Tracker App",
+                    category: "Mobile",
+                    level: "Beginner",
+                  },
+                ].map((item) => (
+                  <Link
+                    key={item.title}
+                    href="/idea-forge"
+                    className="card-compact rounded-2xl p-4"
+                  >
+                    <div className="text-sm font-semibold text-white">{item.title}</div>
+                    <div className="mt-2 text-xs uppercase tracking-[0.16em] text-slate-500">
+                      {item.category} • {item.level}
+                    </div>
+                  </Link>
+                ))}
               </div>
             </section>
+
+            <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+              <section className="section-shell p-6">
+                <div className="flex items-center gap-2 text-cyan-300">
+                  <CalendarDays className="h-4 w-4" />
+                  <span className="text-xs uppercase tracking-[0.16em]">
+                    Recent Activity
+                  </span>
+                </div>
+
+                <h2 className="mt-3 text-2xl font-semibold">Latest updates</h2>
+
+                <div className="mt-5 space-y-4">
+                  {recentActivity.length === 0 ? (
+                    <EmptyState text="No activity found yet." />
+                  ) : (
+                    recentActivity.map((item, index) => (
+                      <div
+                        key={`${item.type}-${item.teamId}-${index}`}
+                        className="card-compact flex items-start gap-4 rounded-2xl p-4"
+                      >
+                        <div
+                          className={`mt-1 inline-flex h-9 w-9 items-center justify-center rounded-full ${
+                            item.type === "registration"
+                              ? "bg-sky-500/10 text-sky-300"
+                              : "bg-emerald-500/10 text-emerald-300"
+                          }`}
+                        >
+                          {item.type === "registration" ? (
+                            <Users className="h-4 w-4" />
+                          ) : (
+                            <CheckCircle2 className="h-4 w-4" />
+                          )}
+                        </div>
+
+                        <div className="min-w-0">
+                          <div className="text-sm font-semibold text-white">
+                            {item.type === "registration"
+                              ? "New Registration"
+                              : "Submission Completed"}
+                          </div>
+                          <div className="mt-1 text-sm text-slate-300">{item.title}</div>
+                          <div className="mt-1 text-xs uppercase tracking-[0.16em] text-slate-500">
+                            {item.subtitle}
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </section>
+
+              <section className="section-shell p-6">
+                <div className="flex items-center gap-2 text-amber-300">
+                  <Trophy className="h-4 w-4" />
+                  <span className="text-xs uppercase tracking-[0.16em]">
+                    Progress Snapshot
+                  </span>
+                </div>
+
+                <h2 className="mt-3 text-2xl font-semibold">Your build status</h2>
+
+                <div className="mt-5 space-y-4">
+                  <ProgressRow
+                    label="Registration Completion"
+                    current={stats.registrations}
+                    total={3}
+                  />
+                  <ProgressRow
+                    label="Submission Completion"
+                    current={stats.submissions}
+                    total={3}
+                  />
+                  <ProgressRow
+                    label="Challenge Participation"
+                    current={stats.uniqueChallenges}
+                    total={3}
+                  />
+                </div>
+              </section>
+            </div>
+
+            <section className="section-shell p-6">
+              <h2 className="text-2xl font-semibold">My Registrations</h2>
+
+              <div className="mt-5 grid gap-4">
+                {data.registrations.length === 0 ? (
+                  <EmptyState text="No registrations found." />
+                ) : (
+                  data.registrations.map((item, index) => (
+                    <div
+                      key={`${item.teamId}-${index}`}
+                      className="card-compact rounded-2xl p-5"
+                    >
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div>
+                          <div className="text-lg font-semibold text-white">
+                            {item.teamName || "Untitled Team"}
+                          </div>
+                          <div className="mt-1 text-sm text-slate-400">
+                            {item.challengeType}
+                          </div>
+                        </div>
+
+                        <div className="chip-soft px-3 py-1 text-xs uppercase tracking-[0.16em] text-cyan-300">
+                          {item.teamId}
+                        </div>
+                      </div>
+
+                      <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                        <MiniInfo label="Members" value={item.teamMembers || "-"} />
+                        <MiniInfo label="Year" value={item.year || "-"} />
+                        <MiniInfo label="Role" value={item.role || "-"} />
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </section>
+
+            <section className="section-shell p-6">
+              <h2 className="text-2xl font-semibold">My Submissions</h2>
+
+              <div className="mt-5 grid gap-4">
+                {data.submissions.length === 0 ? (
+                  <EmptyState text="No submissions yet." />
+                ) : (
+                  data.submissions.map((item, index) => (
+                    <div
+                      key={`${item.teamId}-${index}`}
+                      className="card-compact rounded-2xl p-5"
+                    >
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div>
+                          <div className="text-lg font-semibold text-white">
+                            {item.challengeType}
+                          </div>
+                          <div className="mt-1 text-sm text-slate-400">
+                            Team ID: {item.teamId}
+                          </div>
+                        </div>
+
+                        <div className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-xs uppercase tracking-[0.16em] text-emerald-300">
+                          Submitted
+                        </div>
+                      </div>
+
+                      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                        <MiniInfo label="Project Link" value={item.projectLink || "-"} />
+                        <MiniInfo label="GitHub Link" value={item.githubLink || "-"} />
+                      </div>
+
+                      {item.note && (
+                        <div className="mt-4 rounded-2xl border border-slate-800 bg-slate-950/50 p-4 text-sm leading-6 text-slate-300">
+                          {item.note}
+                        </div>
+                      )}
+                    </div>
+                  ))
+                )}
+              </div>
+            </section>
+          </section>
+        </div>
+      </main>
+
+      {showProfileEditor && (
+        <div className="fixed inset-0 z-50 bg-black/60 px-4 py-8 backdrop-blur-sm">
+          <div className="mx-auto max-w-5xl">
+            <div className="section-shell p-5 sm:p-6">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <div className="badge-pill inline-flex items-center gap-2 px-3 py-1 text-[10px] uppercase tracking-[0.18em] text-cyan-300">
+                    Profile Editor
+                  </div>
+                  <h2 className="mt-3 text-2xl font-semibold text-white">
+                    Personalize your profile
+                  </h2>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setShowProfileEditor(false)}
+                  className="chip-soft inline-flex h-10 w-10 items-center justify-center text-slate-300 hover:text-white"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+
+              <div className="mt-6 grid gap-6 lg:grid-cols-[280px_1fr]">
+                <div className="inner-shell p-4">
+                  <div className="flex flex-col items-center text-center">
+                    <img
+                      src={avatar || editForm.profileImage || avatarOptions[0]}
+                      alt="Profile"
+                      className="h-28 w-28 rounded-full border border-white/10 object-cover bg-slate-900"
+                    />
+
+                    <div className="mt-4 grid w-full gap-2">
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="chip-soft inline-flex items-center justify-center gap-2 px-4 py-2 text-sm text-slate-200 hover:text-cyan-300"
+                      >
+                        <Upload className="h-4 w-4" />
+                        Upload Photo
+                      </button>
+
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        hidden
+                        onChange={(e) => handleAvatarUpload(e.target.files?.[0])}
+                      />
+                    </div>
+
+                    <div className="mt-5 w-full">
+                      <div className="text-left text-xs uppercase tracking-[0.16em] text-slate-500">
+                        Choose an avatar
+                      </div>
+
+                      <div className="mt-3 grid grid-cols-4 gap-2">
+                        {avatarOptions.map((item) => (
+                          <button
+                            key={item}
+                            type="button"
+                            onClick={() => setAvatar(item)}
+                            className={`overflow-hidden rounded-2xl border p-1 transition ${
+                              avatar === item
+                                ? "border-cyan-400/40 bg-cyan-500/10"
+                                : "border-white/10 bg-white/[0.03]"
+                            }`}
+                          >
+                            <img
+                              src={item}
+                              alt="Avatar option"
+                              className="h-14 w-14 rounded-xl object-cover"
+                            />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-6">
+                  <div className="inner-shell p-4 sm:p-5">
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <Field
+                        label="Full Name"
+                        value={editForm.name || ""}
+                        onChange={(value) =>
+                          setEditForm((prev) => ({ ...prev, name: value }))
+                        }
+                      />
+                      <Field
+                        label="Email"
+                        value={editForm.email || ""}
+                        onChange={(value) =>
+                          setEditForm((prev) => ({ ...prev, email: value }))
+                        }
+                      />
+                      <Field
+                        label="College / Organization"
+                        value={editForm.college || ""}
+                        onChange={(value) =>
+                          setEditForm((prev) => ({ ...prev, college: value }))
+                        }
+                      />
+                      <Field
+                        label="Year"
+                        value={editForm.year || ""}
+                        onChange={(value) =>
+                          setEditForm((prev) => ({ ...prev, year: value }))
+                        }
+                      />
+                      <div className="sm:col-span-2">
+                        <Field
+                          label="Role"
+                          value={editForm.role || ""}
+                          onChange={(value) =>
+                            setEditForm((prev) => ({ ...prev, role: value }))
+                          }
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="inner-shell p-4 sm:p-5">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <div className="text-xs uppercase tracking-[0.16em] text-slate-500">
+                          Team Members
+                        </div>
+                        <h3 className="mt-1 text-lg font-semibold text-white">
+                          Add member details
+                        </h3>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={addTeamMember}
+                        className="chip-soft inline-flex items-center gap-2 px-4 py-2 text-sm text-slate-200 hover:text-cyan-300"
+                      >
+                        <Plus className="h-4 w-4" />
+                        Add Member
+                      </button>
+                    </div>
+
+                    <div className="mt-4 space-y-4">
+                      {(editForm.teamMembers || []).length === 0 ? (
+                        <EmptyState text="No team members added yet." />
+                      ) : (
+                        (editForm.teamMembers || []).map((member, index) => (
+                          <div
+                            key={member.id}
+                            className="card-compact rounded-2xl p-4"
+                          >
+                            <div className="mb-4 flex items-center justify-between gap-3">
+                              <div className="inline-flex items-center gap-2 text-sm font-medium text-white">
+                                <UserRound className="h-4 w-4 text-cyan-300" />
+                                Member {index + 1}
+                              </div>
+
+                              <button
+                                type="button"
+                                onClick={() => removeTeamMember(member.id)}
+                                className="inline-flex items-center gap-2 rounded-full border border-rose-500/20 bg-rose-500/10 px-3 py-1.5 text-xs text-rose-300 transition hover:bg-rose-500/20"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                                Remove
+                              </button>
+                            </div>
+
+                            <div className="grid gap-4 sm:grid-cols-2">
+                              <Field
+                                label="Name"
+                                value={member.name}
+                                onChange={(value) =>
+                                  updateTeamMember(member.id, "name", value)
+                                }
+                              />
+                              <Field
+                                label="Email"
+                                value={member.email}
+                                onChange={(value) =>
+                                  updateTeamMember(member.id, "email", value)
+                                }
+                              />
+                              <Field
+                                label="Role"
+                                value={member.role}
+                                onChange={(value) =>
+                                  updateTeamMember(member.id, "role", value)
+                                }
+                              />
+                              <Field
+                                label="Year"
+                                value={member.year}
+                                onChange={(value) =>
+                                  updateTeamMember(member.id, "year", value)
+                                }
+                              />
+                              <div className="sm:col-span-2">
+                                <Field
+                                  label="College / Organization"
+                                  value={member.college}
+                                  onChange={(value) =>
+                                    updateTeamMember(member.id, "college", value)
+                                  }
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap justify-end gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setShowProfileEditor(false)}
+                      className="chip-soft px-5 py-2.5 text-sm text-slate-300 hover:text-white"
+                    >
+                      Cancel
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={saveProfileLocally}
+                      className="rounded-full bg-gradient-to-r from-sky-500 via-cyan-500 to-violet-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:brightness-110"
+                    >
+                      Save Changes
+                    </button>
+                  </div>
+
+                  <p className="text-xs text-slate-500">
+                    Team members, avatar, and profile changes are applied locally
+                    in this UI version. Connect an update API to persist them permanently.
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
+        </div>
+      )}
+    </>
+  );
+}
 
-          {/* Registrations */}
-          <section className="rounded-[32px] border border-slate-800/70 bg-slate-950/70 p-6">
-            <h2 className="text-2xl font-semibold">My Registrations</h2>
-
-            <div className="mt-5 grid gap-4">
-              {data.registrations.length === 0 ? (
-                <EmptyState text="No registrations found." />
-              ) : (
-                data.registrations.map((item, index) => (
-                  <div
-                    key={`${item.teamId}-${index}`}
-                    className="rounded-2xl border border-slate-800 bg-slate-900/40 p-5"
-                  >
-                    <div className="flex flex-wrap items-center justify-between gap-3">
-                      <div>
-                        <div className="text-lg font-semibold text-white">
-                          {item.teamName || "Untitled Team"}
-                        </div>
-                        <div className="mt-1 text-sm text-slate-400">
-                          {item.challengeType}
-                        </div>
-                      </div>
-
-                      <div className="rounded-full border border-cyan-500/20 bg-cyan-500/10 px-3 py-1 text-xs uppercase tracking-[0.16em] text-cyan-300">
-                        {item.teamId}
-                      </div>
-                    </div>
-
-                    <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                      <MiniInfo label="Members" value={item.teamMembers || "-"} />
-                      <MiniInfo label="Year" value={item.year || "-"} />
-                      <MiniInfo label="Role" value={item.role || "-"} />
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </section>
-
-          {/* Submissions */}
-          <section className="rounded-[32px] border border-slate-800/70 bg-slate-950/70 p-6">
-            <h2 className="text-2xl font-semibold">My Submissions</h2>
-
-            <div className="mt-5 grid gap-4">
-              {data.submissions.length === 0 ? (
-                <EmptyState text="No submissions yet." />
-              ) : (
-                data.submissions.map((item, index) => (
-                  <div
-                    key={`${item.teamId}-${index}`}
-                    className="rounded-2xl border border-slate-800 bg-slate-900/40 p-5"
-                  >
-                    <div className="flex flex-wrap items-center justify-between gap-3">
-                      <div>
-                        <div className="text-lg font-semibold text-white">
-                          {item.challengeType}
-                        </div>
-                        <div className="mt-1 text-sm text-slate-400">
-                          Team ID: {item.teamId}
-                        </div>
-                      </div>
-
-                      <div className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-xs uppercase tracking-[0.16em] text-emerald-300">
-                        Submitted
-                      </div>
-                    </div>
-
-                    <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                      <MiniInfo label="Project Link" value={item.projectLink || "-"} />
-                      <MiniInfo label="GitHub Link" value={item.githubLink || "-"} />
-                    </div>
-
-                    {item.note && (
-                      <div className="mt-4 rounded-2xl border border-slate-800 bg-slate-950/50 p-4 text-sm leading-6 text-slate-300">
-                        {item.note}
-                      </div>
-                    )}
-                  </div>
-                ))
-              )}
-            </div>
-          </section>
-        </section>
-      </div>
-    </main>
+function QuickAction({ href, text }: { href: string; text: string }) {
+  return (
+    <Link
+      href={href}
+      className="inline-flex items-center justify-between rounded-2xl border border-slate-800 bg-slate-900/40 px-4 py-3 text-sm text-slate-200 transition hover:border-cyan-400 hover:text-cyan-300"
+    >
+      {text}
+      <ArrowUpRight className="h-4 w-4" />
+    </Link>
   );
 }
 
@@ -505,7 +902,7 @@ function StatCard({
   accent: string;
 }) {
   return (
-    <div className="rounded-[28px] border border-slate-800/70 bg-slate-950/70 p-5">
+    <div className="section-shell p-5">
       <div className={`inline-flex items-center gap-2 ${accent}`}>
         {icon}
         <span className="text-xs uppercase tracking-[0.16em]">{title}</span>
@@ -517,7 +914,7 @@ function StatCard({
 
 function InfoCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
+    <div className="card-compact rounded-2xl p-4">
       <div className="text-xs uppercase tracking-[0.16em] text-slate-500">
         {label}
       </div>
@@ -528,7 +925,7 @@ function InfoCard({ label, value }: { label: string; value: string }) {
 
 function MiniInfo({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-950/45 p-4">
+    <div className="card-compact rounded-2xl p-4">
       <div className="text-xs uppercase tracking-[0.16em] text-slate-500">
         {label}
       </div>
@@ -554,10 +951,10 @@ function ProgressRow({
   current: number;
   total: number;
 }) {
-  const percentage = Math.min(100, Math.round((current / total) * 100));
+  const percentage = total === 0 ? 0 : Math.min(100, Math.round((current / total) * 100));
 
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900/35 p-4">
+    <div className="card-compact rounded-2xl p-4">
       <div className="flex items-center justify-between gap-3">
         <span className="text-sm text-slate-300">{label}</span>
         <span className="text-sm font-medium text-white">{percentage}%</span>
@@ -569,6 +966,30 @@ function ProgressRow({
           style={{ width: `${percentage}%` }}
         />
       </div>
+    </div>
+  );
+}
+
+function Field({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <div className="space-y-2">
+      <label className="text-xs uppercase tracking-[0.14em] text-slate-500">
+        {label}
+      </label>
+      <input
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="input-glass h-11 w-full px-4 text-sm placeholder:text-slate-500"
+        placeholder={label}
+      />
     </div>
   );
 }

@@ -5,6 +5,7 @@ import TopNav from "@/components/top-nav";
 import HeroSection from "@/components/hero-section";
 import AboutSection from "@/components/about-section";
 import SkillsSection from "@/components/skills-section";
+import TechEventsHomeSection from "@/components/tech-events-home-section";
 import ProjectsSection from "@/components/projects-section";
 import BuilderHubSuperUltra from "@/components/builder-hub-super-ultra";
 import ChallengeSection from "@/components/challenge-section";
@@ -21,69 +22,99 @@ import VoiceAssistantPro from "@/components/voice-assistant-pro";
 const RobotWelcome = dynamic(() => import("@/components/robot-welcome"), {
   ssr: false,
   loading: () => (
-    <div className="h-[400px] w-full animate-pulse rounded-3xl bg-slate-900/10" />
+    <div className="section-shell h-[280px] w-full animate-pulse rounded-[28px] sm:h-[340px]" />
   ),
 });
 
+function SectionWrap({
+  id,
+  children,
+  className = "",
+}: {
+  id?: string;
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <section id={id} className={`scroll-mt-24 ${className}`}>
+      {children}
+    </section>
+  );
+}
+
 export default function Home() {
   return (
-    <div className="relative flex min-h-screen flex-col items-center bg-[#020202] text-white selection:bg-red-500/30">
+    <div className="relative min-h-screen overflow-x-hidden bg-transparent text-white selection:bg-cyan-400/20">
       <ParallaxOrbs />
       <CursorGlow />
       <TopNav />
 
-      <main className="mt-24 flex w-full max-w-6xl flex-col gap-16 px-4 sm:px-6 md:gap-24">
-        <section className="scroll-mt-24" id="home">
+      <main className="relative z-10 mx-auto flex w-full max-w-7xl flex-col gap-5 px-4 pb-16 pt-20 sm:gap-6 sm:px-6 sm:pt-24 lg:gap-7 lg:px-8">
+        {/* Hero zone */}
+        <SectionWrap id="home" className="space-y-5">
           <RobotWelcome />
           <VoiceAssistantPro />
-        </section>
+          <HeroSection />
+        </SectionWrap>
 
-        <HeroSection />
-
-        <div className="scroll-mt-24" id="about">
+        {/* About */}
+        <SectionWrap id="about">
           <AboutSection />
-        </div>
+        </SectionWrap>
 
-        <div className="scroll-mt-24" id="skills">
+        {/* Skills */}
+        <SectionWrap id="skills">
           <SkillsSection />
-        </div>
+        </SectionWrap>
 
-        <BuilderHubSuperUltra />
+        {/* Builder Hub */}
+        <SectionWrap>
+          <BuilderHubSuperUltra />
+        </SectionWrap>
 
-        <div className="scroll-mt-24" id="projects">
+        {/* Projects + links */}
+        <SectionWrap id="projects" className="space-y-5">
           <ProjectsSection />
-        </div>
-    <PlatformLinksSection />
-        <div className="scroll-mt-24" id="challenge">
+          <PlatformLinksSection />
+        </SectionWrap>
+
+        {/* Challenge zone */}
+        <SectionWrap id="challenge" className="space-y-5">
           <ChallengeSection />
+          <TechEventsHomeSection />
           <WinnerShowcase />
-        </div>
+        </SectionWrap>
 
-        <div className="scroll-mt-24" id="resources">
+        {/* Resources */}
+        <SectionWrap id="resources">
           <ResourcesSection />
-          <div className="mt-10 grid gap-8 md:grid-cols-2"></div>
-        </div>
+        </SectionWrap>
 
-        <div className="scroll-mt-24" id="updates">
+        {/* Updates */}
+        <SectionWrap id="updates">
           <UpdatesSection />
-        </div>
+        </SectionWrap>
 
-        <div className="scroll-mt-24" id="events">
+        {/* Events */}
+        <SectionWrap id="events">
           <EventsSection />
-        </div>
+        </SectionWrap>
 
-        <div className="scroll-mt-24 mb-20" id="contact">
+        {/* Contact */}
+        <SectionWrap id="contact">
           <ContactSection />
-        </div>
+        </SectionWrap>
       </main>
 
-      <footer className="flex w-full flex-col items-center gap-2 border-t border-white/5 py-10 opacity-50">
-        <p className="font-mono text-[10px] uppercase tracking-[0.5em] text-red-600">
-          Sector-X // Terminal_End
-        </p>
-        <p className="font-mono text-[9px] text-slate-500">
-          © 2026 RAHIL.DEV - ALL_SYSTEMS_OPERATIONAL
-        </p>
+      <footer className="relative z-10 mt-4 border-t border-white/6 bg-white/[0.02] backdrop-blur-xl">
+        <div className="mx-auto flex w-full max-w-7xl flex-col items-center gap-2 px-4 py-8 sm:px-6 lg:px-8">
+          <p className="font-mono text-[10px] uppercase tracking-[0.36em] text-cyan-300/70">
+            MD RAHIL // SYSTEM ACTIVE
+          </p>
+          <p className="text-[11px] text-slate-500">
+            © 2026 MD Rahil. Crafted with modern web technologies.
+          </p>
+        </div>
       </footer>
     </div>
   );
