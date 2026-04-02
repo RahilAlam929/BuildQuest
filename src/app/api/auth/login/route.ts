@@ -7,13 +7,23 @@ export async function POST(req: NextRequest) {
   try {
     const { email, password } = await req.json();
 
+    if (!email || !password) {
+      return NextResponse.json(
+        { ok: false, message: "Email and password are required" },
+        { status: 400 }
+      );
+    }
+
+    const normalizedEmail = String(email).trim().toLowerCase();
+
     const client = await clientPromise;
     const db = client.db();
     const users = db.collection("users");
 
-    const user = await users.findOne({
-      email: String(email).trim().toLowerCase(),
-    });
+    const user = await users.findOne({ email: normalizedEmail });
+
+    console.log("LOGIN EMAIL:", normalizedEmail);
+    console.log("FOUND USER:", user ? "yes" : "no");
 
     if (!user) {
       return NextResponse.json(
@@ -26,7 +36,7 @@ export async function POST(req: NextRequest) {
 
     if (!isMatch) {
       return NextResponse.json(
-        { ok: false, message: "Invalid credentials" },
+        { ok: false, message: "Invalid password" },
         { status: 401 }
       );
     }

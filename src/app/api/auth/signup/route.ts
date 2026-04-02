@@ -1,60 +1,64 @@
-import { NextResponse } from "next/server";
-import bcrypt from "bcryptjs";
+import { NextRequest, NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
-import { signAuthToken } from "@/lib/auth";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 
-export const runtime = "nodejs";
-
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const { name, email, password, college, year, role } = body;
+    const { name, email, password, college, year, role } = await req.json();
 
     if (!name || !email || !password) {
       return NextResponse.json(
-        { ok: false, message: "Name, email, and password are required." },
+        { ok: false, message: "Name, email, and password are required" },
         { status: 400 }
       );
     }
 
-    const client = await clientPromise;
-    const db = client.db("portfolio");
+    const normalizedEmail = String(email).trim().toLowerCase();
 
-    const existingUser = await db.collection("users").findOne({
-      email: email.toLowerCase().trim(),
-    });
+    const client = await clientPromise;
+    const db = client.db();
+    const users = db.collection("users");
+
+    const existingUser = await users.findOne({ email: normalizedEmail });
 
     if (existingUser) {
       return NextResponse.json(
-        { ok: false, message: "User already exists." },
+        { ok: false, message: "User already exists" },
         { status: 409 }
       );
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const result = await db.collection("users").insertOne({
-      name: name.trim(),
-      email: email.toLowerCase().trim(),
+    const result = await users.insertOne({
+      name: String(name).trim(),
+      email: normalizedEmail,
       password: hashedPassword,
-      college: college?.trim() || "",
-      year: year?.trim() || "",
-      role: role?.trim() || "",
+      college: String(college || "").trim(),
+      year: String(year || "").trim(),
+      role: String(role || "").trim(),
       profileImage: "",
+      teamMembers: [],
       createdAt: new Date(),
+      updatedAt: new Date(),
     });
 
-    const token = signAuthToken({
-      email: email.toLowerCase().trim(),
-      userId: result.insertedId.toString(),
-    });
+    const token = jwt.sign(
+      {
+        userId: String(result.insertedId),
+        email: normalizedEmail,
+      },
+      process.env.JWT_SECRET || "dev-secret-change-this",
+      { expiresIn: "7d" }
+    );
 
     const response = NextResponse.json({
       ok: true,
       message: "Signup successful",
     });
 
-    response.cookies.set("auth_token", token, {
+    response.cookies.set("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
@@ -63,9 +67,10 @@ export async function POST(req: Request) {
     });
 
     return response;
-  } catch (error: any) {
+  } catch (error) {
+    console.error("POST /api/auth/signup error:", error);
     return NextResponse.json(
-      { ok: false, message: error?.message || "Signup failed" },
+      { ok: false, message: "Signup failed" },
       { status: 500 }
     );
   }
