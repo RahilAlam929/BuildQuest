@@ -426,3 +426,76 @@ a,
 input {
   max-width: 100%;
 }
+
+/* =========================================
+   BuildQuest — Premium Dark Foundation
+   ========================================= */
+
+:root {
+  color-scheme: dark;
+}
+
+html {
+  background: #030508;
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-width: 0;
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+  background:
+    radial-gradient(
+      circle at 50% -10%,
+      rgba(34, 211, 238, 0.055),
+      transparent 32rem
+    ),
+    #030508;
+  color: #f8fafc;
+}
+
+::selection {
+  background: rgba(34, 211, 238, 0.25);
+  color: white;
+}
+
+/* Premium subtle page texture */
+.buildquest-grid {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.018) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: linear-gradient(to bottom, black, transparent 75%);
+}
+
+/* Hide scrollbars while preserving horizontal scrolling */
+.hide-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Premium focus */
+input:focus-visible,
+button:focus-visible,
+a:focus-visible {
+  outline: 1px solid rgba(34, 211, 238, 0.45);
+  outline-offset: 3px;
+}
+
+/* Prevent media from creating horizontal overflow */
+img,
+video,
+canvas,
+svg {
+  max-width: 100%;
+}
+
+* {
+  box-sizing: border-box;
+}

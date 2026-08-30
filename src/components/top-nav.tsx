@@ -32,7 +32,7 @@ export default function TopNav() {
           </div>
         </Link>
 
-        <nav className="hidden items-center gap-1 md:flex">
+        <nav className="hidden items-center gap-1 lg:flex">
           {links.map((link) => (
             <Link
               key={link.label}
@@ -44,7 +44,7 @@ export default function TopNav() {
           ))}
         </nav>
 
-        <div className="hidden items-center gap-2 md:flex">
+        <div className="hidden items-center gap-2 lg:flex">
           <Link
             href="#resources"
             className="flex h-9 items-center gap-2 rounded-lg border border-white/[0.07] bg-white/[0.025] px-3 text-xs text-slate-400 transition hover:border-white/15 hover:text-white"
@@ -69,14 +69,14 @@ export default function TopNav() {
           type="button"
           onClick={() => setOpen((value) => !value)}
           aria-label="Toggle menu"
-          className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 bg-white/[0.03] text-slate-300 md:hidden"
+          className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 bg-white/[0.03] text-slate-300 lg:hidden"
         >
           {open ? <X size={17} /> : <Menu size={17} />}
         </button>
       </div>
 
       {open && (
-        <div className="border-t border-white/[0.06] bg-[#05070b] px-4 py-4 md:hidden">
+        <div className="border-t border-white/[0.06] bg-[#05070b] px-4 py-4 lg:hidden">
           <nav className="mx-auto flex max-w-7xl flex-col gap-1">
             {links.map((link) => (
               <Link
