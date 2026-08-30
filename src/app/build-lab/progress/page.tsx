@@ -184,6 +184,84 @@ export default function BuildProgressPage() {
           </div>
         </div>
 
+        {progress === 100 && (
+          <div className="mb-6 rounded-3xl border border-emerald-400/20 bg-emerald-400/[0.05] p-6">
+            <p className="text-[10px] uppercase tracking-[0.18em] text-emerald-300">
+              Project shipped
+            </p>
+            <h2 className="mt-2 text-2xl font-semibold text-white">
+              You finished what you started.
+            </h2>
+            <p className="mt-2 max-w-xl text-sm leading-6 text-slate-400">
+              All project tasks are complete. Your BuildQuest project is ready
+              to share with the world.
+            </p>
+
+            <div className="mt-5 flex flex-wrap gap-2">
+              {github && (
+                <a
+                  href={github}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-xl bg-white px-4 py-2.5 text-xs font-semibold text-slate-950 transition hover:bg-cyan-200"
+                >
+                  View GitHub
+                </a>
+              )}
+
+              {deploy && (
+                <a
+                  href={deploy}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-xl border border-white/10 px-4 py-2.5 text-xs font-medium text-slate-300 transition hover:bg-white/[0.05] hover:text-white"
+                >
+                  View live project
+                </a>
+              )}
+            </div>
+          </div>
+        )}
+
+        {progress === 100 && (
+          <div className="mb-6 rounded-3xl border border-emerald-400/20 bg-emerald-400/[0.05] p-6">
+            <p className="text-[10px] uppercase tracking-[0.18em] text-emerald-300">
+              Project shipped
+            </p>
+            <h2 className="mt-2 text-2xl font-semibold text-white">
+              You finished what you started.
+            </h2>
+            <p className="mt-2 max-w-xl text-sm leading-6 text-slate-400">
+              All project tasks are complete. Your BuildQuest project is ready
+              to share with the world.
+            </p>
+
+            <div className="mt-5 flex flex-wrap gap-2">
+              {github && (
+                <a
+                  href={github}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-xl bg-white px-4 py-2.5 text-xs font-semibold text-slate-950 transition hover:bg-cyan-200"
+                >
+                  View GitHub
+                </a>
+              )}
+
+              {deploy && (
+                <a
+                  href={deploy}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-xl border border-white/10 px-4 py-2.5 text-xs font-medium text-slate-300 transition hover:bg-white/[0.05] hover:text-white"
+                >
+                  View live project
+                </a>
+              )}
+            </div>
+          </div>
+        )}
+
         <div className="grid gap-5 lg:grid-cols-[1fr_320px]">
           <section className="rounded-3xl border border-white/[0.08] bg-white/[0.025] p-6">
             <label className="text-[10px] uppercase tracking-[0.16em] text-slate-600">
