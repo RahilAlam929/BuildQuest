@@ -9,6 +9,7 @@ const links = [
   { label: "Roadmaps", href: "#roadmaps" },
   { label: "Learning", href: "#learning" },
   { label: "Tools", href: "/toolkit" },
+  { label: "Updates", href: "/updates" },
 ];
 
 export default function TopNav() {
