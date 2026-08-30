@@ -395,6 +395,52 @@ export default function BuildProgressPage() {
 
             <div className="rounded-3xl border border-white/[0.08] bg-white/[0.025] p-6">
               <p className="text-[10px] uppercase tracking-[0.16em] text-slate-600">
+                Deadline
+              </p>
+
+              {deadlineInfo ? (
+                <>
+                  <p
+                    className={`mt-3 text-2xl font-semibold ${
+                      deadlineInfo.overdue
+                        ? "text-red-300"
+                        : deadlineInfo.urgent
+                          ? "text-amber-300"
+                          : "text-white"
+                    }`}
+                  >
+                    {deadlineInfo.overdue
+                      ? "Overdue"
+                      : deadlineInfo.days === 0
+                        ? "Due today"
+                        : `${deadlineInfo.days} days left`}
+                  </p>
+
+                  <p className="mt-2 text-xs text-slate-500">
+                    {new Date(deadline).toLocaleDateString()}
+                  </p>
+
+                  {deadlineInfo.overdue && (
+                    <p className="mt-3 text-xs text-red-300">
+                      Your project deadline has passed. Finish the remaining tasks.
+                    </p>
+                  )}
+
+                  {deadlineInfo.urgent && !deadlineInfo.overdue && (
+                    <p className="mt-3 text-xs text-amber-300">
+                      Deadline is close. Focus on the remaining tasks.
+                    </p>
+                  )}
+                </>
+              ) : (
+                <p className="mt-3 text-sm text-slate-500">
+                  No deadline set yet.
+                </p>
+              )}
+            </div>
+
+            <div className="rounded-3xl border border-white/[0.08] bg-white/[0.025] p-6">
+              <p className="text-[10px] uppercase tracking-[0.16em] text-slate-600">
                 Build status
               </p>
 
