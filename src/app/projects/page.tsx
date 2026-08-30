@@ -126,9 +126,10 @@ export default function ProjectsPage() {
           ) : (
             <div className="grid gap-4 md:grid-cols-2">
               {projects.map((project) => (
-                <article
+                <Link
                   key={project.id}
-                  className="rounded-3xl border border-white/[0.08] bg-white/[0.025] p-6"
+                  href={`/projects/${project.id}`}
+                  className="group block rounded-3xl border border-white/[0.08] bg-white/[0.025] p-6 transition hover:-translate-y-0.5 hover:border-cyan-400/20"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div>
@@ -164,7 +165,7 @@ export default function ProjectsPage() {
                       </button>
                     ))}
                   </div>
-                </article>
+                </Link>
               ))}
             </div>
           )}
