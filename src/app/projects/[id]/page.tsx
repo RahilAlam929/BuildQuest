@@ -3,6 +3,27 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
+type Project = {
+  id: number;
+  name: string;
+  description: string;
+  status: "Planning" | "Building" | "Shipped";
+  github?: string;
+  demo?: string;
+  stack?: string[];
+};
+
+const defaultProject: Project = {
+  id: 1,
+  name: "My First Build",
+  description:
+    "A practical project workspace for planning, building, testing and shipping your project.",
+  status: "Building",
+  github: "",
+  demo: "",
+  stack: ["Next.js", "TypeScript", "Tailwind CSS"],
+};
+
 const tasks = [
   "Define project idea",
   "Create project structure",
@@ -13,16 +34,47 @@ const tasks = [
 ];
 
 export default function ProjectDetailPage() {
+  const [project, setProject] = useState<Project>(defaultProject);
+  const [editing, setEditing] = useState(false);
+
+  const [name, setName] = useState(defaultProject.name);
+  const [description, setDescription] = useState(defaultProject.description);
+  const [github, setGithub] = useState("");
+  const [demo, setDemo] = useState("");
+  const [stack, setStack] = useState(
+    defaultProject.stack?.join(", ") || ""
+  );
+
   const [completed, setCompleted] = useState<string[]>([]);
 
   useEffect(() => {
-    const saved = localStorage.getItem(
+    const savedProjects = localStorage.getItem("buildquest-projects");
+
+    if (savedProjects) {
+      try {
+        const projects: Project[] = JSON.parse(savedProjects);
+        const found = projects.find((item) => item.id === 1);
+
+        if (found) {
+          setProject(found);
+          setName(found.name);
+          setDescription(found.description);
+          setGithub(found.github || "");
+          setDemo(found.demo || "");
+          setStack(found.stack?.join(", ") || "");
+        }
+      } catch {
+        console.log("Could not load project");
+      }
+    }
+
+    const savedTasks = localStorage.getItem(
       "buildquest-project-1-tasks"
     );
 
-    if (saved) {
+    if (savedTasks) {
       try {
-        setCompleted(JSON.parse(saved));
+        setCompleted(JSON.parse(savedTasks));
       } catch {
         setCompleted([]);
       }
@@ -39,6 +91,51 @@ export default function ProjectDetailPage() {
   const progress = Math.round(
     (completed.length / tasks.length) * 100
   );
+
+  function saveProject() {
+    const updated: Project = {
+      ...project,
+      name: name.trim() || "Untitled Project",
+      description:
+        description.trim() || "No description added.",
+      github: github.trim(),
+      demo: demo.trim(),
+      stack: stack
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean),
+    };
+
+    setProject(updated);
+    setEditing(false);
+
+    const saved = localStorage.getItem("buildquest-projects");
+
+    let projects: Project[] = [];
+
+    if (saved) {
+      try {
+        projects = JSON.parse(saved);
+      } catch {
+        projects = [];
+      }
+    }
+
+    const exists = projects.some((item) => item.id === 1);
+
+    if (exists) {
+      projects = projects.map((item) =>
+        item.id === 1 ? updated : item
+      );
+    } else {
+      projects.push(updated);
+    }
+
+    localStorage.setItem(
+      "buildquest-projects",
+      JSON.stringify(projects)
+    );
+  }
 
   function toggleTask(task: string) {
     setCompleted((current) =>
@@ -60,73 +157,156 @@ export default function ProjectDetailPage() {
         </Link>
 
         <section className="mt-8 rounded-3xl border border-white/[0.08] bg-white/[0.025] p-6 sm:p-8">
-          <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
+
+          {!editing ? (
+            <>
+              <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.2em] text-cyan-400">
+                    Project Workspace
+                  </p>
+
+                  <h1 className="mt-3 text-3xl font-semibold sm:text-4xl">
+                    {project.name}
+                  </h1>
+
+                  <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-500">
+                    {project.description}
+                  </p>
+                </div>
+
+                <button
+                  onClick={() => setEditing(true)}
+                  className="w-fit rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-xs text-slate-300 transition hover:border-cyan-400/20 hover:text-white"
+                >
+                  Edit Project
+                </button>
+              </div>
+
+              <div className="mt-8 grid gap-3 sm:grid-cols-3">
+                <div className="rounded-2xl border border-white/[0.07] bg-black/20 p-4">
+                  <p className="text-[10px] uppercase tracking-wider text-slate-600">
+                    Stack
+                  </p>
+
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {project.stack?.map((item) => (
+                      <span
+                        key={item}
+                        className="rounded-full border border-white/10 px-2.5 py-1 text-[10px] text-slate-400"
+                      >
+                        {item}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border border-white/[0.07] bg-black/20 p-4">
+                  <p className="text-[10px] uppercase tracking-wider text-slate-600">
+                    Status
+                  </p>
+
+                  <p className="mt-2 text-sm text-cyan-300">
+                    {project.status}
+                  </p>
+                </div>
+
+                <div className="rounded-2xl border border-white/[0.07] bg-black/20 p-4">
+                  <p className="text-[10px] uppercase tracking-wider text-slate-600">
+                    Progress
+                  </p>
+
+                  <p className="mt-2 text-sm text-cyan-300">
+                    {progress}%
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-6 flex flex-wrap gap-3">
+                {project.github && (
+                  <a
+                    href={project.github}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-xs text-slate-300 hover:border-white/20 hover:text-white"
+                  >
+                    GitHub →
+                  </a>
+                )}
+
+                {project.demo && (
+                  <a
+                    href={project.demo}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="rounded-xl bg-white px-4 py-2.5 text-xs font-semibold text-slate-950"
+                  >
+                    Live Demo →
+                  </a>
+                )}
+              </div>
+            </>
+          ) : (
             <div>
               <p className="text-xs uppercase tracking-[0.2em] text-cyan-400">
-                Project Workspace
+                Edit Project
               </p>
 
-              <h1 className="mt-3 text-3xl font-semibold sm:text-4xl">
-                My First Build
-              </h1>
+              <div className="mt-6 grid gap-4">
+                <input
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Project name"
+                  className="rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm outline-none placeholder:text-slate-700 focus:border-cyan-400/40"
+                />
 
-              <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-500">
-                A practical project workspace for planning, building,
-                testing and shipping your project.
-              </p>
+                <textarea
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Project description"
+                  rows={4}
+                  className="resize-none rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm outline-none placeholder:text-slate-700 focus:border-cyan-400/40"
+                />
+
+                <input
+                  value={stack}
+                  onChange={(e) => setStack(e.target.value)}
+                  placeholder="Tech stack — Next.js, TypeScript, Tailwind"
+                  className="rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm outline-none placeholder:text-slate-700 focus:border-cyan-400/40"
+                />
+
+                <input
+                  value={github}
+                  onChange={(e) => setGithub(e.target.value)}
+                  placeholder="GitHub URL"
+                  className="rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm outline-none placeholder:text-slate-700 focus:border-cyan-400/40"
+                />
+
+                <input
+                  value={demo}
+                  onChange={(e) => setDemo(e.target.value)}
+                  placeholder="Live Demo URL"
+                  className="rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm outline-none placeholder:text-slate-700 focus:border-cyan-400/40"
+                />
+              </div>
+
+              <div className="mt-5 flex gap-3">
+                <button
+                  onClick={saveProject}
+                  className="rounded-xl bg-cyan-400 px-5 py-2.5 text-xs font-semibold text-slate-950 hover:bg-cyan-300"
+                >
+                  Save Changes
+                </button>
+
+                <button
+                  onClick={() => setEditing(false)}
+                  className="rounded-xl border border-white/10 px-5 py-2.5 text-xs text-slate-400 hover:text-white"
+                >
+                  Cancel
+                </button>
+              </div>
             </div>
-
-            <span className="w-fit rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1.5 text-xs text-cyan-300">
-              Building
-            </span>
-          </div>
-
-          <div className="mt-8 grid gap-3 sm:grid-cols-3">
-            <div className="rounded-2xl border border-white/[0.07] bg-black/20 p-4">
-              <p className="text-[10px] uppercase tracking-wider text-slate-600">
-                Stack
-              </p>
-              <p className="mt-2 text-sm text-slate-300">
-                Next.js · TypeScript · Tailwind
-              </p>
-            </div>
-
-            <div className="rounded-2xl border border-white/[0.07] bg-black/20 p-4">
-              <p className="text-[10px] uppercase tracking-wider text-slate-600">
-                Status
-              </p>
-              <p className="mt-2 text-sm text-slate-300">
-                Active Build
-              </p>
-            </div>
-
-            <div className="rounded-2xl border border-white/[0.07] bg-black/20 p-4">
-              <p className="text-[10px] uppercase tracking-wider text-slate-600">
-                Progress
-              </p>
-              <p className="mt-2 text-sm text-cyan-300">
-                {progress}%
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-6 flex flex-wrap gap-3">
-            <a
-              href="https://github.com/"
-              target="_blank"
-              rel="noreferrer"
-              className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-xs text-slate-300 hover:border-white/20 hover:text-white"
-            >
-              GitHub →
-            </a>
-
-            <a
-              href="#"
-              className="rounded-xl bg-white px-4 py-2.5 text-xs font-semibold text-slate-950"
-            >
-              Live Demo →
-            </a>
-          </div>
+          )}
         </section>
 
         <section className="mt-6 rounded-3xl border border-white/[0.08] bg-white/[0.025] p-6 sm:p-8">
@@ -191,11 +371,6 @@ export default function ProjectDetailPage() {
             <div className="mt-6 rounded-2xl border border-emerald-400/20 bg-emerald-400/[0.05] p-5">
               <p className="text-sm font-semibold text-emerald-300">
                 Project ready to ship.
-              </p>
-
-              <p className="mt-1 text-xs text-slate-500">
-                All build tasks are complete. Add your deployment link and
-                share your project.
               </p>
             </div>
           )}
