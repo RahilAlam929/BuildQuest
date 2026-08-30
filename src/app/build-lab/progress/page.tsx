@@ -24,6 +24,8 @@ export default function BuildProgressPage() {
   const [newTask, setNewTask] = useState("");
   const [github, setGithub] = useState("");
   const [deploy, setDeploy] = useState("");
+  const [notes, setNotes] = useState("");
+  const [stack, setStack] = useState("");
 
   useEffect(() => {
     const saved = localStorage.getItem("buildquest-progress");
@@ -49,6 +51,8 @@ export default function BuildProgressPage() {
         tasks,
         github,
         deploy,
+        notes,
+        stack,
       }),
     );
   }, [project, tasks, github, deploy]);
@@ -219,6 +223,27 @@ export default function BuildProgressPage() {
           </section>
 
           <aside className="space-y-5">
+            <div className="rounded-3xl border border-white/[0.08] bg-white/[0.025] p-6">
+              <p className="text-[10px] uppercase tracking-[0.16em] text-slate-600">
+                Project setup
+              </p>
+
+              <input
+                value={stack}
+                onChange={(event) => setStack(event.target.value)}
+                placeholder="Tech stack — Next.js, TypeScript..."
+                className="mt-4 w-full rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-xs text-white outline-none focus:border-cyan-400/40"
+              />
+
+              <textarea
+                value={notes}
+                onChange={(event) => setNotes(event.target.value)}
+                placeholder="Project notes, ideas, blockers..."
+                rows={5}
+                className="mt-3 w-full resize-none rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-xs leading-6 text-white outline-none focus:border-cyan-400/40"
+              />
+            </div>
+
             <div className="rounded-3xl border border-white/[0.08] bg-white/[0.025] p-6">
               <p className="text-[10px] uppercase tracking-[0.16em] text-slate-600">
                 Project links
