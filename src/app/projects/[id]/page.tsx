@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const tasks = [
   "Define project idea",
@@ -14,6 +14,27 @@ const tasks = [
 
 export default function ProjectDetailPage() {
   const [completed, setCompleted] = useState<string[]>([]);
+
+  useEffect(() => {
+    const saved = localStorage.getItem(
+      "buildquest-project-1-tasks"
+    );
+
+    if (saved) {
+      try {
+        setCompleted(JSON.parse(saved));
+      } catch {
+        setCompleted([]);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem(
+      "buildquest-project-1-tasks",
+      JSON.stringify(completed)
+    );
+  }, [completed]);
 
   const progress = Math.round(
     (completed.length / tasks.length) * 100

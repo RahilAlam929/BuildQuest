@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 
 type Status = "Planning" | "Building" | "Shipped";
@@ -24,9 +24,32 @@ const initialProjects: Project[] = [
 const statuses: Status[] = ["Planning", "Building", "Shipped"];
 
 export default function ProjectsPage() {
-  const [projects, setProjects] = useState<Project[]>(initialProjects);
+  const [projects, setProjects] = useState<Project[]>([]);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+
+  useEffect(() => {
+    const saved = localStorage.getItem("buildquest-projects");
+
+    if (saved) {
+      try {
+        setProjects(JSON.parse(saved));
+      } catch {
+        setProjects(initialProjects);
+      }
+    } else {
+      setProjects(initialProjects);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (projects.length > 0) {
+      localStorage.setItem(
+        "buildquest-projects",
+        JSON.stringify(projects)
+      );
+    }
+  }, [projects]);
 
   function addProject() {
     if (!name.trim()) return;
