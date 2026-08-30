@@ -5,16 +5,36 @@ export type Update = {
   message: string;
   date: string;
   featured?: boolean;
+  status?: "New" | "Important" | "Coming Soon";
 };
 
 export const updates: Update[] = [
   {
-    id: "buildquest-1-0",
+    id: "welcome",
     type: "Announcement",
-    title: "BuildQuest 1.0 is coming 🚀",
+    title: "Welcome to BuildQuest",
     message:
-      "BuildQuest 1.0 brings Hackathon and Ideathon challenges for builders who want to turn ideas into real products.",
-    date: "Aug 29, 2026",
+      "BuildQuest is your space to discover challenges, learn, build projects, and keep shipping.",
+    date: "August 2026",
     featured: true,
   },
+
+  {
+    id: "toolkit",
+    type: "Product Update",
+    title: "Developer Toolkit is live",
+    message:
+      "Explore curated documentation, UI libraries, templates, APIs, deployment tools, and learning resources.",
+    date: "August 2026",
+  },
+
+  // Add your future updates here 👇
+  // {
+  //   id: "your-update-id",
+  //   type: "Launch",
+  //   title: "Your Update Title",
+  //   message: "Write your announcement here.",
+  //   date: "August 30, 2026",
+  //   featured: true,
+  // },
 ];
