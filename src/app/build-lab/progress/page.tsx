@@ -26,6 +26,7 @@ export default function BuildProgressPage() {
   const [deploy, setDeploy] = useState("");
   const [notes, setNotes] = useState("");
   const [stack, setStack] = useState("");
+  const [deadline, setDeadline] = useState("");
 
   useEffect(() => {
     const saved = localStorage.getItem("buildquest-progress");
@@ -37,6 +38,7 @@ export default function BuildProgressPage() {
         setTasks(data.tasks ?? initialTasks);
         setGithub(data.github ?? "");
         setDeploy(data.deploy ?? "");
+        setDeadline(data.deadline ?? "");
       } catch {
         // Ignore invalid saved data.
       }
@@ -53,6 +55,7 @@ export default function BuildProgressPage() {
         deploy,
         notes,
         stack,
+        deadline,
       }),
     );
   }, [project, tasks, github, deploy]);
@@ -93,6 +96,20 @@ export default function BuildProgressPage() {
     setTasks((current) => current.filter((task) => task.id !== id));
   };
 
+  const daysLeft = useMemo(() => {
+    if (!deadline) return null;
+
+    const target = new Date(deadline);
+    const today = new Date();
+
+    target.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+
+    return Math.ceil(
+      (target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
+    );
+  }, [deadline]);
+
   const resetProject = () => {
     if (!window.confirm("Reset this Build Lab project?")) return;
 
@@ -102,6 +119,7 @@ export default function BuildProgressPage() {
     setDeploy("");
     setNotes("");
     setStack("");
+    setDeadline("");
   };
 
   return (
@@ -256,6 +274,18 @@ export default function BuildProgressPage() {
                 className="mt-4 w-full rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-xs text-white outline-none focus:border-cyan-400/40"
               />
 
+              <div className="mt-3">
+                <label className="mb-2 block text-[10px] uppercase tracking-[0.16em] text-slate-600">
+                  Target deadline
+                </label>
+                <input
+                  type="date"
+                  value={deadline}
+                  onChange={(event) => setDeadline(event.target.value)}
+                  className="w-full rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-xs text-white outline-none focus:border-cyan-400/40"
+                />
+              </div>
+
               <textarea
                 value={notes}
                 onChange={(event) => setNotes(event.target.value)}
@@ -323,6 +353,30 @@ export default function BuildProgressPage() {
               <p className="mt-2 text-xs leading-6 text-slate-500">
                 {completed} of {tasks.length} tasks completed.
               </p>
+
+              {daysLeft !== null && (
+                <div className="mt-5 border-t border-white/[0.06] pt-4">
+                  <p className="text-[10px] uppercase tracking-[0.16em] text-slate-600">
+                    Deadline
+                  </p>
+
+                  <p
+                    className={`mt-2 text-sm font-semibold ${
+                      daysLeft < 0
+                        ? "text-red-300"
+                        : daysLeft <= 3
+                          ? "text-amber-300"
+                          : "text-cyan-300"
+                    }`}
+                  >
+                    {daysLeft < 0
+                      ? `${Math.abs(daysLeft)} days overdue`
+                      : daysLeft === 0
+                        ? "Due today"
+                        : `${daysLeft} days remaining`}
+                  </p>
+                </div>
+              )}
             </div>
           </aside>
         </div>
