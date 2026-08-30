@@ -70,6 +70,8 @@ export default function BuildProgressPage() {
   }, [project, tasks, github, deploy]);
 
   const completed = tasks.filter((task) => task.status === "done").length;
+  const inProgress = tasks.filter((task) => task.status === "progress").length;
+  const todo = tasks.filter((task) => task.status === "todo").length;
 
   const progress = useMemo(() => {
     if (!tasks.length) return 0;
@@ -192,6 +194,35 @@ export default function BuildProgressPage() {
                   className="h-full rounded-full bg-cyan-400 transition-all duration-500"
                   style={{ width: `${progress}%` }}
                 />
+              </div>
+            </div>
+
+            <div className="mt-5 grid grid-cols-3 gap-2">
+              <div className="rounded-xl border border-white/[0.06] bg-black/20 p-3">
+                <p className="text-[10px] uppercase tracking-wider text-slate-600">
+                  Done
+                </p>
+                <p className="mt-1 text-lg font-semibold text-emerald-300">
+                  {completed}
+                </p>
+              </div>
+
+              <div className="rounded-xl border border-white/[0.06] bg-black/20 p-3">
+                <p className="text-[10px] uppercase tracking-wider text-slate-600">
+                  Active
+                </p>
+                <p className="mt-1 text-lg font-semibold text-amber-300">
+                  {inProgress}
+                </p>
+              </div>
+
+              <div className="rounded-xl border border-white/[0.06] bg-black/20 p-3">
+                <p className="text-[10px] uppercase tracking-wider text-slate-600">
+                  To do
+                </p>
+                <p className="mt-1 text-lg font-semibold text-slate-300">
+                  {todo}
+                </p>
               </div>
             </div>
 
