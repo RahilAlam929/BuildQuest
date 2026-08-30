@@ -19,8 +19,6 @@ import {
   Rocket,
   Search,
   ShieldCheck,
-  Sparkles,
-  Wand2,
   Wrench,
   Zap,
 } from "lucide-react";
@@ -359,7 +357,7 @@ const featuredPicks = [
   {
     title: "Best for polished UI",
     value: "Tailwind Plus + Lucide + Showcase references",
-    icon: Wand2,
+    icon: Palette,
   },
   {
     title: "Best for hackathons",
@@ -437,7 +435,6 @@ export default function ToolkitPage() {
 
           <div className="relative">
             <div className="inline-flex items-center gap-2 rounded-full border border-cyan-500/20 bg-cyan-500/10 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-cyan-300">
-              <Sparkles className="h-4 w-4" />
               AI Builder Toolkit
             </div>
 
@@ -651,7 +648,6 @@ export default function ToolkitPage() {
         {/* Workflows */}
         <section className="mt-8">
           <div className="flex items-center gap-2">
-            <Wand2 className="h-5 w-5 text-cyan-300" />
             <h2 className="text-2xl font-semibold text-white">
               Smart builder workflows
             </h2>

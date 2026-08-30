@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Award,
@@ -16,7 +17,6 @@ import {
   Send,
   Terminal,
   Users,
-  Wand2,
   X,
 } from "lucide-react";
 
@@ -34,7 +34,7 @@ import {
 type TabKey = "Idea Engine" | "Projects" | "Teams" | "Developers" | "Terminal" | "Leaderboard" | "Funding";
 
 const tabs: { key: TabKey; icon: any }[] = [
-  { key: "Idea Engine", icon: Wand2 },
+  { key: "Idea Engine", icon: null },
   { key: "Projects", icon: Layers },
   { key: "Teams", icon: Users },
   { key: "Developers", icon: GraduationCap },
@@ -551,7 +551,6 @@ export default function BuilderHubSuperUltra() {
                     onClick={pickIdea}
                     className="mt-4 inline-flex cursor-pointer items-center gap-2 rounded-full bg-gradient-to-r from-sky-500 via-blue-500 to-fuchsia-500 px-6 py-2.5 text-sm font-semibold text-white shadow-soft-glow hover:brightness-110"
                   >
-                    <Wand2 className="h-4 w-4" />
                     Generate
                   </button>
 

@@ -2,16 +2,14 @@
 
 import Link from "next/link";
 import {
+  Wrench,
   ArrowLeft,
   ArrowRight,
-  Bot,
   Code2,
   ExternalLink,
   GitBranch,
   Rocket,
-  Sparkles,
   Terminal,
-  Wand2,
 } from "lucide-react";
 
 const labs = [
@@ -19,7 +17,7 @@ const labs = [
     title: "AI Project Builder",
     description:
       "Turn an idea into a clear project plan with features, architecture, and a practical build roadmap.",
-    icon: Wand2,
+    icon: Wrench,
     tag: "Plan",
     href: "/challenge",
   },
@@ -75,7 +73,7 @@ export default function BuildLabPage() {
 
           <div className="relative">
             <div className="inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1.5 text-[10px] uppercase tracking-[0.18em] text-cyan-300">
-              <Sparkles className="h-3.5 w-3.5" />
+              <Wrench className="h-3.5 w-3.5" />
               Build Lab
             </div>
 
@@ -206,7 +204,6 @@ export default function BuildLabPage() {
 
         <section className="mt-8 rounded-[28px] border border-emerald-400/10 bg-emerald-400/[0.025] p-6">
           <div className="flex gap-4">
-            <Bot className="mt-1 h-5 w-5 shrink-0 text-emerald-300" />
             <div>
               <h2 className="text-sm font-semibold text-white">
                 Build Lab is designed for builders
