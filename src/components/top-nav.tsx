@@ -8,7 +8,8 @@ const links = [
   { label: "Resources", href: "#resources" },
   { label: "Roadmaps", href: "#roadmaps" },
   { label: "Learning", href: "#learning" },
-  { label: "Tools", href: "/toolkit" },
+  { label: "Events", href: "#events" },
+  { label: "Toolkit", href: "/toolkit" },
   { label: "Updates", href: "/updates" },
 ];
 
@@ -61,7 +62,7 @@ export default function TopNav() {
             href="/toolkit"
             className="group flex h-9 items-center gap-1 rounded-lg bg-white px-4 text-xs font-semibold text-slate-950 transition hover:bg-cyan-200"
           >
-            Explore Tools
+            Explore Toolkit
             <ArrowUpRight className="h-3.5 w-3.5 transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
           </Link>
         </div>
@@ -95,7 +96,7 @@ export default function TopNav() {
               onClick={() => setOpen(false)}
               className="mt-2 flex items-center justify-center rounded-xl bg-white py-3 text-sm font-semibold text-slate-950"
             >
-              Explore Tools
+              Explore Toolkit
             </Link>
           </nav>
         </div>
