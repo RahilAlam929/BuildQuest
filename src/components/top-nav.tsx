@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Menu, X, Search, ArrowUpRight } from "lucide-react";
 
 const links = [
+  { label: "Build Lab", href: "/build-lab" },
   { label: "Resources", href: "#resources" },
   { label: "Roadmaps", href: "#roadmaps" },
   { label: "Learning", href: "#learning" },
