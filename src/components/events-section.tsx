@@ -5,7 +5,6 @@ import {
   Calendar,
   ArrowUpRight,
   Clock3,
-  Sparkles,
   Trophy,
 } from "lucide-react";
 
@@ -31,7 +30,7 @@ const defaultEvents: EventItem[] = [
             ,
     description:
       "A premium innovation challenge where participants can choose Hackathon or Ideathon tracks, solve real-world problems, and compete for exciting prizes and winner spotlight.",
-    link: "/#challenge",
+    link: "/challenge/hackathon",
   },
 ];
 
@@ -49,8 +48,7 @@ export default function EventsSection({
 
       <div className="mb-6 text-center">
         <div className="inline-flex items-center gap-2 rounded-full border border-sky-500/20 bg-slate-950/50 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-sky-300/80">
-          <Sparkles className="h-4 w-4" />
-          Events & Updates
+Events & Updates
         </div>
 
         <h2 className="mt-4 text-lg font-semibold tracking-wide text-sky-200">
