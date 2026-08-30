@@ -78,6 +78,22 @@ export default function BuildProgressPage() {
     return Math.round((completed / tasks.length) * 100);
   }, [completed, tasks.length]);
 
+  const deadlineInfo = useMemo(() => {
+    if (!deadline) return null;
+
+    const deadlineDate = new Date(deadline);
+    const now = new Date();
+
+    const diff = deadlineDate.getTime() - now.getTime();
+    const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+
+    return {
+      days,
+      overdue: days < 0,
+      urgent: days >= 0 && days <= 3,
+    };
+  }, [deadline]);
+
   const updateStatus = (id: number, status: TaskStatus) => {
     setTasks((current) =>
       current.map((task) =>
