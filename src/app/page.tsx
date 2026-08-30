@@ -1,123 +1,102 @@
-"use client";
-
-import dynamic from "next/dynamic";
 import TopNav from "@/components/top-nav";
-import HeroSection from "@/components/hero-section";
-import AboutSection from "@/components/about-section";
-import OpenCollabHomeCard from "@/components/open-collab-home-card";
-import SkillsSection from "@/components/skills-section";
-import TechEventsHomeSection from "@/components/tech-events-home-section";
-import ProjectsSection from "@/components/projects-section";
-import BuilderHubSuperUltra from "@/components/builder-hub-super-ultra";
-import ChallengeSection from "@/components/challenge-section";
-import PlatformLinksSection from "@/components/platform-links-section";
-import WinnerShowcase from "@/components/winner-showcase";
 import ResourcesSection from "@/components/resources-section";
-import UpdatesSection from "@/components/updates-section";
 import EventsSection from "@/components/events-section";
-import ContactSection from "@/components/contact-section";
-import CursorGlow from "@/components/cursor-glow";
-import ParallaxOrbs from "@/components/parallax-orbs";
-import VoiceAssistantPro from "@/components/voice-assistant-pro";
-
-const RobotWelcome = dynamic(() => import("@/components/robot-welcome"), {
-  ssr: false,
-  loading: () => (
-    <div className="section-shell h-[280px] w-full animate-pulse rounded-[28px] sm:h-[340px]" />
-  ),
-});
-
-function SectionWrap({
-  id,
-  children,
-  className = "",
-}: {
-  id?: string;
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <section id={id} className={`scroll-mt-24 ${className}`}>
-      {children}
-    </section>
-  );
-}
 
 export default function Home() {
   return (
-    <div className="relative min-h-screen overflow-x-hidden bg-transparent text-white selection:bg-cyan-400/20">
-      <ParallaxOrbs />
-      <CursorGlow />
+    <main className="min-h-screen w-full overflow-x-hidden bg-[#05070b] text-white">
       <TopNav />
 
-      <main className="relative z-10 mx-auto flex w-full max-w-7xl flex-col gap-5 px-4 pb-16 pt-20 sm:gap-6 sm:px-6 sm:pt-24 lg:gap-7 lg:px-8">
-        {/* Hero zone */}
-        <SectionWrap id="home" className="space-y-5">
-          <RobotWelcome />
-          <VoiceAssistantPro />
-          <HeroSection />
-        </SectionWrap>
+      {/* Hero */}
+      <section className="relative overflow-hidden pt-16">
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute left-1/2 top-[-180px] h-[500px] w-[700px] -translate-x-1/2 rounded-full bg-cyan-500/[0.08] blur-[120px]" />
+          <div className="absolute left-[15%] top-[180px] h-[250px] w-[250px] rounded-full bg-blue-500/[0.05] blur-[100px]" />
+          <div className="absolute right-[10%] top-[260px] h-[220px] w-[220px] rounded-full bg-fuchsia-500/[0.04] blur-[100px]" />
+        </div>
 
-        {/* About */}
-        <SectionWrap id="about">
-          <AboutSection />
-        </SectionWrap>
+        <div className="relative mx-auto max-w-7xl px-4 pb-12 pt-20 text-center sm:px-6 sm:pb-16 sm:pt-28 lg:px-8">
+          <div className="mx-auto mb-6 inline-flex items-center gap-2 rounded-full border border-cyan-400/15 bg-cyan-400/[0.05] px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-cyan-300">
+            <span className="h-1.5 w-1.5 rounded-full bg-cyan-300 shadow-[0_0_12px_rgba(103,232,249,0.8)]" />
+            Developer Resource Hub
+          </div>
 
-        {/* Skills */}
-        <SectionWrap id="skills">
-          <SkillsSection />
-        </SectionWrap>
+          <h1 className="mx-auto max-w-5xl text-4xl font-bold leading-[1.05] tracking-[-0.05em] text-white sm:text-6xl lg:text-7xl">
+            Learn faster.
+            <br />
+            <span className="bg-gradient-to-r from-cyan-300 via-white to-blue-300 bg-clip-text text-transparent">
+              Build better.
+            </span>
+          </h1>
 
-        {/* Builder Hub */}
-        <SectionWrap>
-          <BuilderHubSuperUltra />
-        </SectionWrap>
-
-        {/* Projects + links */}
-        <SectionWrap id="projects" className="space-y-5">
-          <ProjectsSection />
-          <OpenCollabHomeCard />
-          <PlatformLinksSection />
-        </SectionWrap>
-
-        {/* Challenge zone */}
-        <SectionWrap id="challenge" className="space-y-5">
-          <ChallengeSection />
-          <TechEventsHomeSection />
-          <WinnerShowcase />
-        </SectionWrap>
-
-        {/* Resources */}
-        <SectionWrap id="resources">
-          <ResourcesSection />
-        </SectionWrap>
-
-        {/* Updates */}
-        <SectionWrap id="updates">
-          <UpdatesSection />
-        </SectionWrap>
-
-        {/* Events */}
-        <SectionWrap id="events">
-          <EventsSection />
-        </SectionWrap>
-
-        {/* Contact */}
-        <SectionWrap id="contact">
-          <ContactSection />
-        </SectionWrap>
-      </main>
-
-      <footer className="relative z-10 mt-4 border-t border-white/6 bg-white/[0.02] backdrop-blur-xl">
-        <div className="mx-auto flex w-full max-w-7xl flex-col items-center gap-2 px-4 py-8 sm:px-6 lg:px-8">
-          <p className="font-mono text-[10px] uppercase tracking-[0.36em] text-cyan-300/70">
-            MD RAHIL // SYSTEM ACTIVE
+          <p className="mx-auto mt-6 max-w-2xl text-sm leading-7 text-slate-500 sm:text-base">
+            A curated collection of developer roadmaps, free courses,
+            certifications, tools and practical resources — all in one place.
           </p>
-          <p className="text-[11px] text-slate-500">
-            © 2026 MD Rahil. Crafted with modern web technologies.
-          </p>
+
+          <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <a
+              href="#resources"
+              className="inline-flex h-11 items-center justify-center rounded-xl bg-white px-6 text-sm font-semibold text-slate-950 transition hover:bg-cyan-200"
+            >
+              Explore Resources
+            </a>
+
+            <a
+              href="#roadmaps"
+              className="inline-flex h-11 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.03] px-6 text-sm font-medium text-slate-300 transition hover:border-white/15 hover:bg-white/[0.06] hover:text-white"
+            >
+              Explore Roadmaps
+            </a>
+          </div>
+
+          {/* Stats */}
+          <div className="mx-auto mt-14 grid max-w-2xl grid-cols-2 overflow-hidden rounded-2xl border border-white/[0.07] bg-white/[0.02] sm:grid-cols-4">
+            {[
+              ["10+", "Career paths"],
+              ["30+", "Resources"],
+              ["8", "Learning tracks"],
+              ["100%", "Curated"],
+            ].map(([value, label]) => (
+              <div
+                key={label}
+                className="border-white/[0.06] px-4 py-5 first:border-r last:border-l sm:border-r sm:last:border-r-0"
+              >
+                <div className="text-lg font-semibold text-white">
+                  {value}
+                </div>
+                <div className="mt-1 text-[10px] uppercase tracking-[0.16em] text-slate-600">
+                  {label}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Resources */}
+      <div id="roadmaps">
+        <ResourcesSection />
+      </div>
+
+      {/* Events */}
+      <EventsSection />
+
+      {/* Footer */}
+      <footer className="border-t border-white/[0.06]">
+        <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-8 text-center sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:text-left lg:px-8">
+          <div>
+            <div className="text-sm font-semibold text-white">BuildQuest</div>
+            <div className="mt-1 text-xs text-slate-600">
+              A better place to learn, build and ship.
+            </div>
+          </div>
+
+          <div className="text-[10px] uppercase tracking-[0.18em] text-slate-700">
+            Developer Resources
+          </div>
         </div>
       </footer>
-    </div>
+    </main>
   );
 }
