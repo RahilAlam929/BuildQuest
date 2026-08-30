@@ -1,221 +1,562 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import {
-  Wrench,
-  ArrowLeft,
   ArrowRight,
-  Code2,
+  Check,
+  Circle,
   ExternalLink,
-  GitBranch,
+  Github,
+  Plus,
   Rocket,
-  Terminal,
+  Trash2,
 } from "lucide-react";
 
-const labs = [
-  {
-    title: "AI Project Builder",
-    description:
-      "Turn an idea into a clear project plan with features, architecture, and a practical build roadmap.",
-    icon: Wrench,
-    tag: "Plan",
-    href: "/challenge",
-  },
-  {
-    title: "Code Playground",
-    description:
-      "Use this space to experiment with code ideas, test approaches, and build small prototypes.",
-    icon: Terminal,
-    tag: "Build",
-    href: "/toolkit",
-  },
-  {
-    title: "GitHub Workflow",
-    description:
-      "Follow a clean flow from idea → branch → implementation → commit → pull request.",
-    icon: GitBranch,
-    tag: "Ship",
-    href: "https://github.com/",
-    external: true,
-  },
-  {
-    title: "Project Launch",
-    description:
-      "Move a finished project toward deployment with resources for hosting, APIs, UI and production setup.",
-    icon: Rocket,
-    tag: "Launch",
-    href: "/toolkit",
-  },
-];
+type Status = "Idea" | "Building" | "Testing" | "Shipped";
 
-const workflow = [
-  ["01", "Choose an idea", "Start with a real problem worth solving."],
-  ["02", "Plan the build", "Define features, stack and architecture."],
-  ["03", "Build & test", "Implement, debug and improve your project."],
-  ["04", "Ship it", "Deploy, document and share your work."],
+type Project = {
+  id: number;
+  name: string;
+  description: string;
+  stack: string[];
+  status: Status;
+  tasks: string[];
+  completed: number;
+  github: string;
+  demo: string;
+};
+
+const initialProjects: Project[] = [
+  {
+    id: 1,
+    name: "AI Study Assistant",
+    description:
+      "A focused workspace for notes, learning resources and study progress.",
+    stack: ["Next.js", "TypeScript", "Supabase"],
+    status: "Building",
+    tasks: [
+      "Create project structure",
+      "Build dashboard",
+      "Add authentication",
+      "Connect database",
+      "Deploy application",
+    ],
+    completed: 3,
+    github: "",
+    demo: "",
+  },
 ];
 
 export default function BuildLabPage() {
+  const [projects, setProjects] = useState<Project[]>(initialProjects);
+  const [selectedId, setSelectedId] = useState(1);
+  const [showCreate, setShowCreate] = useState(false);
+
+  const selected = projects.find((p) => p.id === selectedId);
+
+  function toggleTask(index: number) {
+    if (!selected) return;
+
+    const completed = selected.tasks.map((_, i) =>
+      i === index ? true : i < selected.completed,
+    );
+
+    const count = completed.filter(Boolean).length;
+
+    setProjects((current) =>
+      current.map((project) =>
+        project.id === selected.id
+          ? {
+              ...project,
+              completed: count,
+              status:
+                count === project.tasks.length
+                  ? "Shipped"
+                  : count >= 4
+                    ? "Testing"
+                    : count > 0
+                      ? "Building"
+                      : "Idea",
+            }
+          : project,
+      ),
+    );
+  }
+
+  function createProject(
+    name: string,
+    description: string,
+    stack: string,
+  ) {
+    const id = Date.now();
+
+    const project: Project = {
+      id,
+      name,
+      description,
+      stack: stack
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean),
+      status: "Idea",
+      tasks: [
+        "Define project goal",
+        "Create project structure",
+        "Build first feature",
+        "Test the project",
+        "Deploy",
+      ],
+      completed: 0,
+      github: "",
+      demo: "",
+    };
+
+    setProjects((current) => [project, ...current]);
+    setSelectedId(id);
+    setShowCreate(false);
+  }
+
+  function deleteProject() {
+    if (!selected) return;
+
+    const remaining = projects.filter((p) => p.id !== selected.id);
+
+    setProjects(remaining);
+    setSelectedId(remaining[0]?.id ?? 0);
+  }
+
+  const progress = selected
+    ? Math.round((selected.completed / selected.tasks.length) * 100)
+    : 0;
+
   return (
-    <main className="min-h-screen bg-slate-950 px-5 py-8 sm:px-8 lg:px-10">
+    <main className="min-h-screen bg-[#020202] px-4 pb-20 pt-24 text-white sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
-        <Link
-          href="/"
-          className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2 text-sm text-slate-300 transition hover:border-cyan-400/30 hover:text-cyan-300"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back Home
-        </Link>
+        <header className="border-b border-white/[0.07] pb-8">
+          <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+            <div>
+              <p className="mb-3 text-[10px] uppercase tracking-[0.2em] text-cyan-300">
+                Build Lab
+              </p>
 
-        <section className="relative mt-6 overflow-hidden rounded-[34px] border border-white/10 bg-white/[0.025] p-6 sm:p-10">
-          <div className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-cyan-500/10 blur-3xl" />
-          <div className="pointer-events-none absolute -right-24 bottom-0 h-72 w-72 rounded-full bg-violet-500/10 blur-3xl" />
+              <h1 className="text-3xl font-semibold tracking-tight sm:text-5xl">
+                Build something real.
+              </h1>
 
-          <div className="relative">
-            <div className="inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1.5 text-[10px] uppercase tracking-[0.18em] text-cyan-300">
-              <Wrench className="h-3.5 w-3.5" />
-              Build Lab
+              <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-500 sm:text-base">
+                Turn ideas into structured projects. Track your work,
+                manage tasks and ship your builds.
+              </p>
             </div>
 
-            <h1 className="mt-5 max-w-4xl text-4xl font-semibold tracking-tight text-white sm:text-6xl">
-              From idea to
-              <span className="text-cyan-300"> working project.</span>
-            </h1>
+            <button
+              onClick={() => setShowCreate(true)}
+              className="inline-flex w-fit items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-200"
+            >
+              <Plus className="h-4 w-4" />
+              New Project
+            </button>
+          </div>
+        </header>
 
-            <p className="mt-5 max-w-2xl text-sm leading-7 text-slate-400 sm:text-base">
-              A practical workspace for builders. Plan ideas, explore tools,
-              improve your workflow and ship projects instead of leaving them
-              unfinished.
-            </p>
+        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <Stat label="Projects" value={projects.length} />
+          <Stat
+            label="Building"
+            value={projects.filter((p) => p.status === "Building").length}
+          />
+          <Stat
+            label="Testing"
+            value={projects.filter((p) => p.status === "Testing").length}
+          />
+          <Stat
+            label="Shipped"
+            value={projects.filter((p) => p.status === "Shipped").length}
+          />
+        </div>
 
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link
-                href="/challenge"
-                className="inline-flex items-center gap-2 rounded-xl bg-cyan-400 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-300"
-              >
-                Start Building
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-
-              <Link
-                href="/toolkit"
-                className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-medium text-slate-200 transition hover:border-cyan-400/30 hover:text-cyan-300"
-              >
-                Explore Toolkit
-                <ExternalLink className="h-4 w-4" />
-              </Link>
+        <div className="mt-8 grid gap-6 lg:grid-cols-[270px_1fr]">
+          <aside className="rounded-3xl border border-white/[0.08] bg-white/[0.025] p-3">
+            <div className="px-3 py-3">
+              <p className="text-[10px] uppercase tracking-[0.18em] text-slate-600">
+                Your Projects
+              </p>
             </div>
-          </div>
-        </section>
 
-        <section className="mt-8">
-          <div className="mb-5">
-            <p className="text-[10px] uppercase tracking-[0.18em] text-slate-600">
-              Builder Workspace
-            </p>
-            <h2 className="mt-2 text-2xl font-semibold text-white sm:text-3xl">
-              Pick your next move
-            </h2>
-          </div>
+            <div className="space-y-1">
+              {projects.map((project) => {
+                const projectProgress = Math.round(
+                  (project.completed / project.tasks.length) * 100,
+                );
 
-          <div className="grid gap-4 md:grid-cols-2">
-            {labs.map((lab) => {
-              const Icon = lab.icon;
-
-              const content = (
-                <div className="group h-full rounded-[25px] border border-white/10 bg-white/[0.025] p-5 transition duration-300 hover:-translate-y-1 hover:border-cyan-400/30 hover:bg-white/[0.045]">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-cyan-400/20 bg-cyan-400/10 text-cyan-300">
-                      <Icon className="h-5 w-5" />
+                return (
+                  <button
+                    key={project.id}
+                    onClick={() => setSelectedId(project.id)}
+                    className={`w-full rounded-2xl p-4 text-left transition ${
+                      selectedId === project.id
+                        ? "bg-white/[0.07]"
+                        : "hover:bg-white/[0.04]"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="truncate text-sm font-medium text-white">
+                        {project.name}
+                      </span>
+                      <span className="text-[10px] text-slate-600">
+                        {project.status}
+                      </span>
                     </div>
 
-                    <span className="rounded-full border border-white/10 bg-white/[0.03] px-2.5 py-1 text-[9px] uppercase tracking-[0.14em] text-slate-500">
-                      {lab.tag}
+                    <div className="mt-3 h-1 overflow-hidden rounded-full bg-white/[0.06]">
+                      <div
+                        className="h-full rounded-full bg-cyan-300 transition-all"
+                        style={{ width: `${projectProgress}%` }}
+                      />
+                    </div>
+
+                    <p className="mt-2 text-[10px] text-slate-600">
+                      {projectProgress}% complete
+                    </p>
+                  </button>
+                );
+              })}
+            </div>
+          </aside>
+
+          {selected ? (
+            <section className="overflow-hidden rounded-3xl border border-white/[0.08] bg-white/[0.025]">
+              <div className="border-b border-white/[0.07] p-6 sm:p-8">
+                <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+                  <div>
+                    <span className="rounded-full border border-cyan-300/15 bg-cyan-300/5 px-3 py-1 text-[10px] uppercase tracking-[0.15em] text-cyan-300">
+                      {selected.status}
+                    </span>
+
+                    <h2 className="mt-4 text-2xl font-semibold sm:text-3xl">
+                      {selected.name}
+                    </h2>
+
+                    <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-500">
+                      {selected.description}
+                    </p>
+                  </div>
+
+                  <button
+                    onClick={deleteProject}
+                    className="inline-flex w-fit items-center gap-2 rounded-xl border border-red-400/10 px-3 py-2 text-xs text-slate-500 hover:border-red-400/30 hover:text-red-300"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                    Delete
+                  </button>
+                </div>
+
+                <div className="mt-7">
+                  <div className="mb-2 flex justify-between text-xs">
+                    <span className="text-slate-500">
+                      Project progress
+                    </span>
+                    <span className="font-semibold text-white">
+                      {progress}%
                     </span>
                   </div>
 
-                  <h3 className="mt-5 text-lg font-semibold text-white">
-                    {lab.title}
-                  </h3>
-
-                  <p className="mt-2 text-sm leading-6 text-slate-500">
-                    {lab.description}
-                  </p>
-
-                  <div className="mt-5 inline-flex items-center gap-2 text-xs font-medium text-cyan-300">
-                    Open Lab
-                    <ArrowRight className="h-3.5 w-3.5 transition group-hover:translate-x-1" />
+                  <div className="h-2 overflow-hidden rounded-full bg-white/[0.06]">
+                    <div
+                      className="h-full rounded-full bg-cyan-300 transition-all"
+                      style={{ width: `${progress}%` }}
+                    />
                   </div>
                 </div>
-              );
-
-              return lab.external ? (
-                <a
-                  key={lab.title}
-                  href={lab.href}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  {content}
-                </a>
-              ) : (
-                <Link key={lab.title} href={lab.href}>
-                  {content}
-                </Link>
-              );
-            })}
-          </div>
-        </section>
-
-        <section className="mt-8 rounded-[30px] border border-white/10 bg-white/[0.025] p-6 sm:p-8">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-violet-400/20 bg-violet-400/10 text-violet-300">
-              <Code2 className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="text-xs uppercase tracking-[0.16em] text-slate-500">
-                Simple workflow
-              </p>
-              <h2 className="mt-1 text-2xl font-semibold text-white">
-                Build → Test → Ship
-              </h2>
-            </div>
-          </div>
-
-          <div className="mt-7 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {workflow.map(([number, title, description]) => (
-              <div
-                key={number}
-                className="rounded-2xl border border-white/10 bg-black/20 p-4"
-              >
-                <div className="text-xs font-semibold text-cyan-300">
-                  {number}
-                </div>
-                <h3 className="mt-3 text-sm font-semibold text-white">
-                  {title}
-                </h3>
-                <p className="mt-2 text-xs leading-5 text-slate-500">
-                  {description}
-                </p>
               </div>
-            ))}
-          </div>
-        </section>
 
-        <section className="mt-8 rounded-[28px] border border-emerald-400/10 bg-emerald-400/[0.025] p-6">
-          <div className="flex gap-4">
-            <div>
-              <h2 className="text-sm font-semibold text-white">
-                Build Lab is designed for builders
-              </h2>
-              <p className="mt-2 text-xs leading-6 text-slate-500">
-                Keep your project process simple: find a problem, make a plan,
-                build something useful, test it, and ship it.
-              </p>
+              <div className="grid gap-8 p-6 sm:p-8 lg:grid-cols-[1fr_280px]">
+                <div>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-semibold">
+                        Build Checklist
+                      </p>
+                      <p className="mt-1 text-xs text-slate-600">
+                        Complete tasks while building.
+                      </p>
+                    </div>
+
+                    <span className="text-xs text-slate-500">
+                      {selected.completed}/{selected.tasks.length}
+                    </span>
+                  </div>
+
+                  <div className="mt-5 space-y-2">
+                    {selected.tasks.map((task, index) => {
+                      const done = index < selected.completed;
+
+                      return (
+                        <button
+                          key={task}
+                          onClick={() => toggleTask(index)}
+                          className="flex w-full items-center gap-3 rounded-2xl border border-white/[0.06] bg-black/20 p-4 text-left transition hover:border-cyan-300/20"
+                        >
+                          <span
+                            className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border ${
+                              done
+                                ? "border-cyan-300 bg-cyan-300 text-black"
+                                : "border-white/10 text-slate-700"
+                            }`}
+                          >
+                            {done ? (
+                              <Check className="h-3.5 w-3.5" />
+                            ) : (
+                              <Circle className="h-3 w-3" />
+                            )}
+                          </span>
+
+                          <span
+                            className={
+                              done
+                                ? "text-sm text-slate-600 line-through"
+                                : "text-sm text-slate-300"
+                            }
+                          >
+                            {task}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <Info title="Tech Stack">
+                    <div className="flex flex-wrap gap-2">
+                      {selected.stack.map((item) => (
+                        <span
+                          key={item}
+                          className="rounded-lg border border-white/[0.07] bg-white/[0.03] px-2.5 py-1.5 text-[11px] text-slate-400"
+                        >
+                          {item}
+                        </span>
+                      ))}
+                    </div>
+                  </Info>
+
+                  <Info title="Project Links">
+                    <div className="space-y-2">
+                      <a
+                        href={selected.github || "https://github.com/"}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex items-center justify-between rounded-xl border border-white/[0.06] px-3 py-2.5 text-xs text-slate-400 hover:text-white"
+                      >
+                        GitHub
+                        <Github className="h-3.5 w-3.5" />
+                      </a>
+
+                      <a
+                        href={selected.demo || "#"}
+                        onClick={(event) => {
+                          if (!selected.demo) event.preventDefault();
+                        }}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex items-center justify-between rounded-xl border border-white/[0.06] px-3 py-2.5 text-xs text-slate-400 hover:text-white"
+                      >
+                        Live Demo
+                        <ExternalLink className="h-3.5 w-3.5" />
+                      </a>
+                    </div>
+                  </Info>
+
+                  <Link
+                    href="/challenge"
+                    className="flex items-center justify-between rounded-2xl border border-cyan-300/15 bg-cyan-300/5 p-4 text-xs text-cyan-200 hover:bg-cyan-300/10"
+                  >
+                    Find a challenge
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+
+                  {progress === 100 && (
+                    <div className="flex items-center gap-3 rounded-2xl border border-emerald-300/15 bg-emerald-300/5 p-4">
+                      <Rocket className="h-5 w-5 text-emerald-300" />
+                      <div>
+                        <p className="text-xs font-semibold text-emerald-200">
+                          Project shipped
+                        </p>
+                        <p className="mt-1 text-[10px] text-slate-600">
+                          Ready to showcase.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </section>
+          ) : (
+            <div className="flex min-h-[400px] items-center justify-center rounded-3xl border border-dashed border-white/[0.1]">
+              <div className="text-center">
+                <p className="font-semibold">No projects yet</p>
+                <button
+                  onClick={() => setShowCreate(true)}
+                  className="mt-4 rounded-xl bg-white px-5 py-2.5 text-xs font-semibold text-black"
+                >
+                  Create your first project
+                </button>
+              </div>
             </div>
-          </div>
-        </section>
+          )}
+        </div>
       </div>
+
+      {showCreate && (
+        <CreateModal
+          onClose={() => setShowCreate(false)}
+          onCreate={createProject}
+        />
+      )}
     </main>
+  );
+}
+
+function Stat({
+  label,
+  value,
+}: {
+  label: string;
+  value: number;
+}) {
+  return (
+    <div className="rounded-2xl border border-white/[0.07] bg-white/[0.025] p-5">
+      <p className="text-[10px] uppercase tracking-[0.16em] text-slate-600">
+        {label}
+      </p>
+      <p className="mt-2 text-2xl font-semibold">{value}</p>
+    </div>
+  );
+}
+
+function Info({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-2xl border border-white/[0.07] bg-black/20 p-4">
+      <p className="mb-3 text-[10px] uppercase tracking-[0.15em] text-slate-600">
+        {title}
+      </p>
+      {children}
+    </div>
+  );
+}
+
+function CreateModal({
+  onClose,
+  onCreate,
+}: {
+  onClose: () => void;
+  onCreate: (name: string, description: string, stack: string) => void;
+}) {
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [stack, setStack] = useState("");
+
+  function submit(event: React.FormEvent) {
+    event.preventDefault();
+
+    if (!name.trim()) return;
+
+    onCreate(
+      name.trim(),
+      description.trim() || "A new BuildQuest project.",
+      stack.trim() || "Next.js, TypeScript",
+    );
+  }
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 px-4 backdrop-blur-sm">
+      <form
+        onSubmit={submit}
+        className="w-full max-w-lg rounded-3xl border border-white/[0.1] bg-[#080a0f] p-6 sm:p-8"
+      >
+        <p className="text-[10px] uppercase tracking-[0.18em] text-cyan-300">
+          New Project
+        </p>
+
+        <h2 className="mt-2 text-xl font-semibold">
+          Start a new build
+        </h2>
+
+        <div className="mt-7 space-y-4">
+          <Input
+            label="Project name"
+            value={name}
+            onChange={setName}
+            placeholder="Campus Marketplace"
+          />
+
+          <Input
+            label="Description"
+            value={description}
+            onChange={setDescription}
+            placeholder="What are you building?"
+          />
+
+          <Input
+            label="Tech stack"
+            value={stack}
+            onChange={setStack}
+            placeholder="Next.js, TypeScript, Supabase"
+          />
+        </div>
+
+        <div className="mt-7 flex gap-3">
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex-1 rounded-xl border border-white/[0.08] py-3 text-sm text-slate-400 hover:text-white"
+          >
+            Cancel
+          </button>
+
+          <button
+            type="submit"
+            className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-cyan-300 py-3 text-sm font-semibold text-black hover:bg-cyan-200"
+          >
+            Create
+            <ArrowRight className="h-4 w-4" />
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
+function Input({
+  label,
+  value,
+  onChange,
+  placeholder,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  placeholder: string;
+}) {
+  return (
+    <label className="block">
+      <span className="mb-2 block text-[10px] uppercase tracking-[0.15em] text-slate-600">
+        {label}
+      </span>
+
+      <input
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        placeholder={placeholder}
+        className="w-full rounded-xl border border-white/[0.08] bg-white/[0.03] px-4 py-3 text-sm text-white outline-none placeholder:text-slate-700 focus:border-cyan-300/30"
+      />
+    </label>
   );
 }
