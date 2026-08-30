@@ -1,562 +1,360 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import Link from "next/link";
-import { useState } from "react";
 import {
-  ArrowRight,
+  ArrowLeft,
   Check,
-  Circle,
-  ExternalLink,
+  ChevronRight,
+  Code2,
+  Copy,
+  FolderKanban,
   Github,
-  Plus,
-  Rocket,
-  Trash2,
+  Globe,
+  Save,
+  Terminal,
 } from "lucide-react";
 
-type Status = "Idea" | "Building" | "Testing" | "Shipped";
-
-type Project = {
+type Task = {
   id: number;
-  name: string;
+  title: string;
   description: string;
-  stack: string[];
-  status: Status;
-  tasks: string[];
-  completed: number;
-  github: string;
-  demo: string;
+  done: boolean;
 };
 
-const initialProjects: Project[] = [
+const starterTasks: Task[] = [
   {
     id: 1,
-    name: "AI Study Assistant",
-    description:
-      "A focused workspace for notes, learning resources and study progress.",
-    stack: ["Next.js", "TypeScript", "Supabase"],
-    status: "Building",
-    tasks: [
-      "Create project structure",
-      "Build dashboard",
-      "Add authentication",
-      "Connect database",
-      "Deploy application",
-    ],
-    completed: 3,
-    github: "",
-    demo: "",
+    title: "Define the problem",
+    description: "Write down the real problem your project solves.",
+    done: false,
+  },
+  {
+    id: 2,
+    title: "Choose the tech stack",
+    description: "Decide frontend, backend, database and deployment.",
+    done: false,
+  },
+  {
+    id: 3,
+    title: "Design the MVP",
+    description: "List only the features required for the first working version.",
+    done: false,
+  },
+  {
+    id: 4,
+    title: "Build the first version",
+    description: "Create the core functionality before polishing the UI.",
+    done: false,
+  },
+  {
+    id: 5,
+    title: "Test everything",
+    description: "Check the main user flow and fix obvious issues.",
+    done: false,
+  },
+  {
+    id: 6,
+    title: "Deploy",
+    description: "Put your project online and verify the production build.",
+    done: false,
   },
 ];
 
 export default function BuildLabPage() {
-  const [projects, setProjects] = useState<Project[]>(initialProjects);
-  const [selectedId, setSelectedId] = useState(1);
-  const [showCreate, setShowCreate] = useState(false);
+  const [projectName, setProjectName] = useState("");
+  const [idea, setIdea] = useState("");
+  const [stack, setStack] = useState("Next.js + TypeScript + Tailwind");
+  const [tasks, setTasks] = useState<Task[]>(starterTasks);
+  const [saved, setSaved] = useState(false);
 
-  const selected = projects.find((p) => p.id === selectedId);
+  const completed = tasks.filter((task) => task.done).length;
 
-  function toggleTask(index: number) {
-    if (!selected) return;
+  const progress = useMemo(() => {
+    if (!tasks.length) return 0;
+    return Math.round((completed / tasks.length) * 100);
+  }, [completed, tasks.length]);
 
-    const completed = selected.tasks.map((_, i) =>
-      i === index ? true : i < selected.completed,
+  function toggleTask(id: number) {
+    setTasks((current) =>
+      current.map((task) =>
+        task.id === id ? { ...task, done: !task.done } : task
+      )
     );
-
-    const count = completed.filter(Boolean).length;
-
-    setProjects((current) =>
-      current.map((project) =>
-        project.id === selected.id
-          ? {
-              ...project,
-              completed: count,
-              status:
-                count === project.tasks.length
-                  ? "Shipped"
-                  : count >= 4
-                    ? "Testing"
-                    : count > 0
-                      ? "Building"
-                      : "Idea",
-            }
-          : project,
-      ),
-    );
+    setSaved(false);
   }
 
-  function createProject(
-    name: string,
-    description: string,
-    stack: string,
-  ) {
-    const id = Date.now();
-
-    const project: Project = {
-      id,
-      name,
-      description,
-      stack: stack
-        .split(",")
-        .map((item) => item.trim())
-        .filter(Boolean),
-      status: "Idea",
-      tasks: [
-        "Define project goal",
-        "Create project structure",
-        "Build first feature",
-        "Test the project",
-        "Deploy",
-      ],
-      completed: 0,
-      github: "",
-      demo: "",
+  function saveProject() {
+    const project = {
+      projectName,
+      idea,
+      stack,
+      tasks,
+      savedAt: new Date().toISOString(),
     };
 
-    setProjects((current) => [project, ...current]);
-    setSelectedId(id);
-    setShowCreate(false);
+    localStorage.setItem("buildquest-build-lab", JSON.stringify(project));
+    setSaved(true);
   }
 
-  function deleteProject() {
-    if (!selected) return;
+  async function copyPlan() {
+    const plan = `# ${projectName || "My BuildQuest Project"}
 
-    const remaining = projects.filter((p) => p.id !== selected.id);
+Idea:
+${idea || "Define the project idea"}
 
-    setProjects(remaining);
-    setSelectedId(remaining[0]?.id ?? 0);
+Tech Stack:
+${stack}
+
+Progress:
+${progress}%
+
+Tasks:
+${tasks
+  .map((task) => `${task.done ? "[x]" : "[ ]"} ${task.title}`)
+  .join("\n")}
+`;
+
+    await navigator.clipboard.writeText(plan);
   }
-
-  const progress = selected
-    ? Math.round((selected.completed / selected.tasks.length) * 100)
-    : 0;
 
   return (
-    <main className="min-h-screen bg-[#020202] px-4 pb-20 pt-24 text-white sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-[#020202] px-5 pb-20 pt-24 text-white sm:px-8 lg:px-10">
       <div className="mx-auto max-w-7xl">
-        <header className="border-b border-white/[0.07] pb-8">
-          <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
-            <div>
-              <p className="mb-3 text-[10px] uppercase tracking-[0.2em] text-cyan-300">
-                Build Lab
-              </p>
+        <Link
+          href="/"
+          className="mb-8 inline-flex items-center gap-2 text-xs text-slate-500 transition hover:text-white"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to BuildQuest
+        </Link>
 
-              <h1 className="text-3xl font-semibold tracking-tight sm:text-5xl">
-                Build something real.
-              </h1>
-
-              <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-500 sm:text-base">
-                Turn ideas into structured projects. Track your work,
-                manage tasks and ship your builds.
-              </p>
-            </div>
-
-            <button
-              onClick={() => setShowCreate(true)}
-              className="inline-flex w-fit items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-200"
-            >
-              <Plus className="h-4 w-4" />
-              New Project
-            </button>
+        <div className="mb-10">
+          <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-[10px] uppercase tracking-[0.18em] text-slate-400">
+            Build Lab
           </div>
-        </header>
 
-        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Stat label="Projects" value={projects.length} />
-          <Stat
-            label="Building"
-            value={projects.filter((p) => p.status === "Building").length}
-          />
-          <Stat
-            label="Testing"
-            value={projects.filter((p) => p.status === "Testing").length}
-          />
-          <Stat
-            label="Shipped"
-            value={projects.filter((p) => p.status === "Shipped").length}
-          />
+          <h1 className="max-w-3xl text-4xl font-semibold tracking-tight sm:text-5xl">
+            Turn an idea into a project.
+          </h1>
+
+          <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-500 sm:text-base">
+            Plan your project, choose your stack, track the MVP and ship a
+            working build.
+          </p>
         </div>
 
-        <div className="mt-8 grid gap-6 lg:grid-cols-[270px_1fr]">
-          <aside className="rounded-3xl border border-white/[0.08] bg-white/[0.025] p-3">
-            <div className="px-3 py-3">
-              <p className="text-[10px] uppercase tracking-[0.18em] text-slate-600">
-                Your Projects
-              </p>
+        <div className="grid gap-5 lg:grid-cols-[1fr_0.42fr]">
+          <section className="rounded-[28px] border border-white/[0.08] bg-white/[0.025] p-6 sm:p-8">
+            <div className="mb-7 flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-cyan-400/20 bg-cyan-400/10">
+                <FolderKanban className="h-5 w-5 text-cyan-300" />
+              </div>
+
+              <div>
+                <h2 className="text-sm font-semibold">Project workspace</h2>
+                <p className="text-xs text-slate-600">
+                  Start with the fundamentals.
+                </p>
+              </div>
             </div>
 
-            <div className="space-y-1">
-              {projects.map((project) => {
-                const projectProgress = Math.round(
-                  (project.completed / project.tasks.length) * 100,
-                );
+            <div className="space-y-5">
+              <div>
+                <label className="mb-2 block text-xs font-medium text-slate-400">
+                  Project name
+                </label>
 
-                return (
-                  <button
-                    key={project.id}
-                    onClick={() => setSelectedId(project.id)}
-                    className={`w-full rounded-2xl p-4 text-left transition ${
-                      selectedId === project.id
-                        ? "bg-white/[0.07]"
-                        : "hover:bg-white/[0.04]"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between gap-3">
-                      <span className="truncate text-sm font-medium text-white">
-                        {project.name}
-                      </span>
-                      <span className="text-[10px] text-slate-600">
-                        {project.status}
-                      </span>
-                    </div>
+                <input
+                  value={projectName}
+                  onChange={(e) => {
+                    setProjectName(e.target.value);
+                    setSaved(false);
+                  }}
+                  placeholder="e.g. Student Productivity OS"
+                  className="w-full rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-700 focus:border-cyan-400/40"
+                />
+              </div>
 
-                    <div className="mt-3 h-1 overflow-hidden rounded-full bg-white/[0.06]">
-                      <div
-                        className="h-full rounded-full bg-cyan-300 transition-all"
-                        style={{ width: `${projectProgress}%` }}
-                      />
-                    </div>
+              <div>
+                <label className="mb-2 block text-xs font-medium text-slate-400">
+                  What are you building?
+                </label>
 
-                    <p className="mt-2 text-[10px] text-slate-600">
-                      {projectProgress}% complete
-                    </p>
-                  </button>
-                );
-              })}
+                <textarea
+                  value={idea}
+                  onChange={(e) => {
+                    setIdea(e.target.value);
+                    setSaved(false);
+                  }}
+                  rows={5}
+                  placeholder="Describe the problem, target users and your solution..."
+                  className="w-full resize-none rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm leading-6 text-white outline-none placeholder:text-slate-700 focus:border-cyan-400/40"
+                />
+              </div>
+
+              <div>
+                <label className="mb-2 block text-xs font-medium text-slate-400">
+                  Technology stack
+                </label>
+
+                <input
+                  value={stack}
+                  onChange={(e) => {
+                    setStack(e.target.value);
+                    setSaved(false);
+                  }}
+                  className="w-full rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white outline-none focus:border-cyan-400/40"
+                />
+              </div>
+            </div>
+          </section>
+
+          <aside className="rounded-[28px] border border-white/[0.08] bg-white/[0.025] p-6">
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-slate-500">Build progress</span>
+              <span className="text-2xl font-semibold">{progress}%</span>
+            </div>
+
+            <div className="mt-5 h-2 overflow-hidden rounded-full bg-white/10">
+              <div
+                className="h-full rounded-full bg-cyan-400 transition-all"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+
+            <p className="mt-3 text-xs text-slate-600">
+              {completed} of {tasks.length} milestones completed
+            </p>
+
+            <div className="mt-8 space-y-3">
+              <button
+                onClick={saveProject}
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-xs font-semibold text-slate-950 transition hover:bg-cyan-200"
+              >
+                <Save className="h-4 w-4" />
+                {saved ? "Saved locally" : "Save Project"}
+              </button>
+
+              <button
+                onClick={copyPlan}
+                className="flex w-full items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-xs text-slate-300 transition hover:border-white/20 hover:text-white"
+              >
+                <Copy className="h-4 w-4" />
+                Copy Project Plan
+              </button>
             </div>
           </aside>
+        </div>
 
-          {selected ? (
-            <section className="overflow-hidden rounded-3xl border border-white/[0.08] bg-white/[0.025]">
-              <div className="border-b border-white/[0.07] p-6 sm:p-8">
-                <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
-                  <div>
-                    <span className="rounded-full border border-cyan-300/15 bg-cyan-300/5 px-3 py-1 text-[10px] uppercase tracking-[0.15em] text-cyan-300">
-                      {selected.status}
-                    </span>
-
-                    <h2 className="mt-4 text-2xl font-semibold sm:text-3xl">
-                      {selected.name}
-                    </h2>
-
-                    <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-500">
-                      {selected.description}
-                    </p>
-                  </div>
-
-                  <button
-                    onClick={deleteProject}
-                    className="inline-flex w-fit items-center gap-2 rounded-xl border border-red-400/10 px-3 py-2 text-xs text-slate-500 hover:border-red-400/30 hover:text-red-300"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                    Delete
-                  </button>
-                </div>
-
-                <div className="mt-7">
-                  <div className="mb-2 flex justify-between text-xs">
-                    <span className="text-slate-500">
-                      Project progress
-                    </span>
-                    <span className="font-semibold text-white">
-                      {progress}%
-                    </span>
-                  </div>
-
-                  <div className="h-2 overflow-hidden rounded-full bg-white/[0.06]">
-                    <div
-                      className="h-full rounded-full bg-cyan-300 transition-all"
-                      style={{ width: `${progress}%` }}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid gap-8 p-6 sm:p-8 lg:grid-cols-[1fr_280px]">
-                <div>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-semibold">
-                        Build Checklist
-                      </p>
-                      <p className="mt-1 text-xs text-slate-600">
-                        Complete tasks while building.
-                      </p>
-                    </div>
-
-                    <span className="text-xs text-slate-500">
-                      {selected.completed}/{selected.tasks.length}
-                    </span>
-                  </div>
-
-                  <div className="mt-5 space-y-2">
-                    {selected.tasks.map((task, index) => {
-                      const done = index < selected.completed;
-
-                      return (
-                        <button
-                          key={task}
-                          onClick={() => toggleTask(index)}
-                          className="flex w-full items-center gap-3 rounded-2xl border border-white/[0.06] bg-black/20 p-4 text-left transition hover:border-cyan-300/20"
-                        >
-                          <span
-                            className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border ${
-                              done
-                                ? "border-cyan-300 bg-cyan-300 text-black"
-                                : "border-white/10 text-slate-700"
-                            }`}
-                          >
-                            {done ? (
-                              <Check className="h-3.5 w-3.5" />
-                            ) : (
-                              <Circle className="h-3 w-3" />
-                            )}
-                          </span>
-
-                          <span
-                            className={
-                              done
-                                ? "text-sm text-slate-600 line-through"
-                                : "text-sm text-slate-300"
-                            }
-                          >
-                            {task}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <Info title="Tech Stack">
-                    <div className="flex flex-wrap gap-2">
-                      {selected.stack.map((item) => (
-                        <span
-                          key={item}
-                          className="rounded-lg border border-white/[0.07] bg-white/[0.03] px-2.5 py-1.5 text-[11px] text-slate-400"
-                        >
-                          {item}
-                        </span>
-                      ))}
-                    </div>
-                  </Info>
-
-                  <Info title="Project Links">
-                    <div className="space-y-2">
-                      <a
-                        href={selected.github || "https://github.com/"}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="flex items-center justify-between rounded-xl border border-white/[0.06] px-3 py-2.5 text-xs text-slate-400 hover:text-white"
-                      >
-                        GitHub
-                        <Github className="h-3.5 w-3.5" />
-                      </a>
-
-                      <a
-                        href={selected.demo || "#"}
-                        onClick={(event) => {
-                          if (!selected.demo) event.preventDefault();
-                        }}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="flex items-center justify-between rounded-xl border border-white/[0.06] px-3 py-2.5 text-xs text-slate-400 hover:text-white"
-                      >
-                        Live Demo
-                        <ExternalLink className="h-3.5 w-3.5" />
-                      </a>
-                    </div>
-                  </Info>
-
-                  <Link
-                    href="/challenge"
-                    className="flex items-center justify-between rounded-2xl border border-cyan-300/15 bg-cyan-300/5 p-4 text-xs text-cyan-200 hover:bg-cyan-300/10"
-                  >
-                    Find a challenge
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-
-                  {progress === 100 && (
-                    <div className="flex items-center gap-3 rounded-2xl border border-emerald-300/15 bg-emerald-300/5 p-4">
-                      <Rocket className="h-5 w-5 text-emerald-300" />
-                      <div>
-                        <p className="text-xs font-semibold text-emerald-200">
-                          Project shipped
-                        </p>
-                        <p className="mt-1 text-[10px] text-slate-600">
-                          Ready to showcase.
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </section>
-          ) : (
-            <div className="flex min-h-[400px] items-center justify-center rounded-3xl border border-dashed border-white/[0.1]">
-              <div className="text-center">
-                <p className="font-semibold">No projects yet</p>
-                <button
-                  onClick={() => setShowCreate(true)}
-                  className="mt-4 rounded-xl bg-white px-5 py-2.5 text-xs font-semibold text-black"
-                >
-                  Create your first project
-                </button>
-              </div>
+        <section className="mt-5 rounded-[28px] border border-white/[0.08] bg-white/[0.025] p-6 sm:p-8">
+          <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+            <div>
+              <p className="text-[10px] uppercase tracking-[0.18em] text-slate-600">
+                MVP Roadmap
+              </p>
+              <h2 className="mt-2 text-xl font-semibold">
+                Ship it step by step.
+              </h2>
             </div>
-          )}
+
+            <span className="text-xs text-slate-600">
+              {completed}/{tasks.length} complete
+            </span>
+          </div>
+
+          <div className="mt-7 grid gap-3">
+            {tasks.map((task) => (
+              <button
+                key={task.id}
+                onClick={() => toggleTask(task.id)}
+                className="group flex w-full items-start gap-4 rounded-2xl border border-white/[0.07] bg-black/20 p-4 text-left transition hover:border-cyan-400/20"
+              >
+                <span
+                  className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border ${
+                    task.done
+                      ? "border-emerald-400/30 bg-emerald-400/10 text-emerald-300"
+                      : "border-white/10 text-transparent"
+                  }`}
+                >
+                  <Check className="h-3.5 w-3.5" />
+                </span>
+
+                <span className="min-w-0 flex-1">
+                  <span
+                    className={`block text-sm font-medium ${
+                      task.done ? "text-slate-500 line-through" : "text-white"
+                    }`}
+                  >
+                    {task.title}
+                  </span>
+
+                  <span className="mt-1 block text-xs leading-6 text-slate-600">
+                    {task.description}
+                  </span>
+                </span>
+
+                <ChevronRight className="mt-1 h-4 w-4 shrink-0 text-slate-700 transition group-hover:text-cyan-300" />
+              </button>
+            ))}
+          </div>
+        </section>
+
+        <section className="mt-5 grid gap-5 md:grid-cols-3">
+          {[
+            {
+              icon: Code2,
+              title: "Write code",
+              text: "Move from idea to a working MVP.",
+            },
+            {
+              icon: Terminal,
+              title: "Test locally",
+              text: "Validate the important user flows.",
+            },
+            {
+              icon: Globe,
+              title: "Ship online",
+              text: "Deploy and share your finished project.",
+            },
+          ].map((item) => {
+            const Icon = item.icon;
+
+            return (
+              <div
+                key={item.title}
+                className="rounded-2xl border border-white/[0.08] bg-white/[0.025] p-5"
+              >
+                <Icon className="h-5 w-5 text-cyan-300" />
+                <h3 className="mt-4 text-sm font-semibold">{item.title}</h3>
+                <p className="mt-2 text-xs leading-6 text-slate-600">
+                  {item.text}
+                </p>
+              </div>
+            );
+          })}
+        </section>
+
+        <div className="mt-8 flex flex-wrap gap-3">
+          <Link
+            href="/challenge"
+            className="inline-flex items-center gap-2 rounded-xl bg-cyan-400 px-4 py-2.5 text-xs font-semibold text-slate-950 transition hover:bg-cyan-300"
+          >
+            Join a Challenge
+            <ChevronRight className="h-3.5 w-3.5" />
+          </Link>
+
+          <a
+            href="https://github.com"
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-xs text-slate-300 transition hover:border-white/20 hover:text-white"
+          >
+            <Github className="h-3.5 w-3.5" />
+            GitHub
+          </a>
         </div>
       </div>
-
-      {showCreate && (
-        <CreateModal
-          onClose={() => setShowCreate(false)}
-          onCreate={createProject}
-        />
-      )}
     </main>
-  );
-}
-
-function Stat({
-  label,
-  value,
-}: {
-  label: string;
-  value: number;
-}) {
-  return (
-    <div className="rounded-2xl border border-white/[0.07] bg-white/[0.025] p-5">
-      <p className="text-[10px] uppercase tracking-[0.16em] text-slate-600">
-        {label}
-      </p>
-      <p className="mt-2 text-2xl font-semibold">{value}</p>
-    </div>
-  );
-}
-
-function Info({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="rounded-2xl border border-white/[0.07] bg-black/20 p-4">
-      <p className="mb-3 text-[10px] uppercase tracking-[0.15em] text-slate-600">
-        {title}
-      </p>
-      {children}
-    </div>
-  );
-}
-
-function CreateModal({
-  onClose,
-  onCreate,
-}: {
-  onClose: () => void;
-  onCreate: (name: string, description: string, stack: string) => void;
-}) {
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [stack, setStack] = useState("");
-
-  function submit(event: React.FormEvent) {
-    event.preventDefault();
-
-    if (!name.trim()) return;
-
-    onCreate(
-      name.trim(),
-      description.trim() || "A new BuildQuest project.",
-      stack.trim() || "Next.js, TypeScript",
-    );
-  }
-
-  return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 px-4 backdrop-blur-sm">
-      <form
-        onSubmit={submit}
-        className="w-full max-w-lg rounded-3xl border border-white/[0.1] bg-[#080a0f] p-6 sm:p-8"
-      >
-        <p className="text-[10px] uppercase tracking-[0.18em] text-cyan-300">
-          New Project
-        </p>
-
-        <h2 className="mt-2 text-xl font-semibold">
-          Start a new build
-        </h2>
-
-        <div className="mt-7 space-y-4">
-          <Input
-            label="Project name"
-            value={name}
-            onChange={setName}
-            placeholder="Campus Marketplace"
-          />
-
-          <Input
-            label="Description"
-            value={description}
-            onChange={setDescription}
-            placeholder="What are you building?"
-          />
-
-          <Input
-            label="Tech stack"
-            value={stack}
-            onChange={setStack}
-            placeholder="Next.js, TypeScript, Supabase"
-          />
-        </div>
-
-        <div className="mt-7 flex gap-3">
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex-1 rounded-xl border border-white/[0.08] py-3 text-sm text-slate-400 hover:text-white"
-          >
-            Cancel
-          </button>
-
-          <button
-            type="submit"
-            className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-cyan-300 py-3 text-sm font-semibold text-black hover:bg-cyan-200"
-          >
-            Create
-            <ArrowRight className="h-4 w-4" />
-          </button>
-        </div>
-      </form>
-    </div>
-  );
-}
-
-function Input({
-  label,
-  value,
-  onChange,
-  placeholder,
-}: {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-  placeholder: string;
-}) {
-  return (
-    <label className="block">
-      <span className="mb-2 block text-[10px] uppercase tracking-[0.15em] text-slate-600">
-        {label}
-      </span>
-
-      <input
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        placeholder={placeholder}
-        className="w-full rounded-xl border border-white/[0.08] bg-white/[0.03] px-4 py-3 text-sm text-white outline-none placeholder:text-slate-700 focus:border-cyan-300/30"
-      />
-    </label>
   );
 }
