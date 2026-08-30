@@ -68,7 +68,7 @@ export default function ChallengePage() {
                 <Link
                   key={challenge.slug}
                   href={`/challenge/${challenge.slug}`}
-                  className={`group relative overflow-hidden rounded-[28px] border border-slate-800/70 bg-gradient-to-br ${challenge.softTheme} p-[1px] transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:shadow-cyan-500/10`}
+                  className={`group relative z-10 block cursor-pointer overflow-hidden rounded-[28px] border border-slate-800/70 bg-gradient-to-br ${challenge.softTheme} p-[1px] transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:shadow-cyan-500/10`}
                 >
                   <div className="absolute inset-0 opacity-0 transition duration-500 group-hover:opacity-100 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.12),transparent_35%)]" />
                   <div className="relative h-full rounded-[27px] bg-slate-950/90 p-5 sm:p-6">
