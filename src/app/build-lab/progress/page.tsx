@@ -93,6 +93,17 @@ export default function BuildProgressPage() {
     setTasks((current) => current.filter((task) => task.id !== id));
   };
 
+  const resetProject = () => {
+    if (!window.confirm("Reset this Build Lab project?")) return;
+
+    setProject("My BuildQuest Project");
+    setTasks(initialTasks);
+    setGithub("");
+    setDeploy("");
+    setNotes("");
+    setStack("");
+  };
+
   return (
     <main className="min-h-screen px-5 pb-20 pt-28 sm:px-8">
       <div className="mx-auto max-w-6xl">
@@ -112,10 +123,20 @@ export default function BuildProgressPage() {
             Ship what you start.
           </h1>
 
-          <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-500">
-            Track your project from idea to deployment. Everything is saved
-            locally in your browser.
-          </p>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <p className="max-w-2xl text-sm leading-7 text-slate-500">
+              Track your project from idea to deployment. Everything is saved
+              locally in your browser.
+            </p>
+
+            <button
+              type="button"
+              onClick={resetProject}
+              className="w-fit rounded-xl border border-red-400/15 bg-red-400/[0.04] px-4 py-2.5 text-xs font-medium text-red-300 transition hover:border-red-400/30 hover:bg-red-400/[0.08]"
+            >
+              Reset project
+            </button>
+          </div>
         </div>
 
         <div className="grid gap-5 lg:grid-cols-[1fr_320px]">
