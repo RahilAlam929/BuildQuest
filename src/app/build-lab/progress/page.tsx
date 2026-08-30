@@ -18,6 +18,15 @@ const initialTasks: Task[] = [
   { id: 5, title: "Deploy", status: "todo" },
 ];
 
+const milestones = [
+  { title: "Idea", description: "Define what you are building.", threshold: 0 },
+  { title: "Planning", description: "Shape features and architecture.", threshold: 20 },
+  { title: "MVP", description: "Build the first working version.", threshold: 40 },
+  { title: "Testing", description: "Fix bugs and validate the product.", threshold: 70 },
+  { title: "Deployment", description: "Ship your project to the world.", threshold: 90 },
+  { title: "Shipped", description: "Your project is live.", threshold: 100 },
+];
+
 export default function BuildProgressPage() {
   const [project, setProject] = useState("My BuildQuest Project");
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
