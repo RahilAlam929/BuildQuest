@@ -137,6 +137,38 @@ export default function BuildProgressPage() {
     );
   }, [deadline]);
 
+  const exportProject = () => {
+    const data = {
+      project,
+      tasks,
+      github,
+      deploy,
+      notes,
+      stack,
+      deadline,
+      progress,
+      exportedAt: new Date().toISOString(),
+    };
+
+    const blob = new Blob([JSON.stringify(data, null, 2)], {
+      type: "application/json",
+    });
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+
+    link.href = url;
+    link.download = `${project
+      .trim()
+      .replace(/[^a-z0-9]+/gi, "-")
+      .replace(/^-|-$/g, "") || "buildquest-project"}.json`;
+
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  };
+
   const resetProject = () => {
     if (!window.confirm("Reset this Build Lab project?")) return;
 
@@ -174,13 +206,23 @@ export default function BuildProgressPage() {
               locally in your browser.
             </p>
 
-            <button
-              type="button"
-              onClick={resetProject}
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={exportProject}
+                className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-xs font-medium text-slate-300 transition hover:bg-white/[0.06] hover:text-white"
+              >
+                Export JSON
+              </button>
+
+              <button
+                type="button"
+                onClick={resetProject}
               className="w-fit rounded-xl border border-red-400/15 bg-red-400/[0.04] px-4 py-2.5 text-xs font-medium text-red-300 transition hover:border-red-400/30 hover:bg-red-400/[0.08]"
             >
               Reset project
-            </button>
+              </button>
+            </div>
           </div>
         </div>
 
