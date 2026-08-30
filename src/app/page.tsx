@@ -53,7 +53,7 @@ export default function Home() {
             <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <Link
                 href="#resources"
-                className="group inline-flex h-12 items-center gap-2 rounded-xl bg-white px-6 text-sm font-semibold text-[#030508] transition duration-300 hover:-translate-y-0.5 hover:bg-cyan-200"
+                className="group inline-flex h-12 items-center gap-2 rounded-xl border border-cyan-400/20 bg-cyan-400/10 px-6 text-sm font-semibold text-cyan-300 transition duration-300 hover:-translate-y-0.5 hover:bg-cyan-200"
               >
                 Explore resources
                 <ArrowUpRight className="h-4 w-4 transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
@@ -146,7 +146,7 @@ export default function Home() {
 
               <Link
                 href="#resources"
-                className="mt-7 inline-flex h-11 items-center gap-2 rounded-xl bg-white px-5 text-xs font-semibold text-[#030508] transition hover:bg-cyan-200"
+                className="mt-7 inline-flex h-11 items-center gap-2 rounded-xl border border-cyan-400/20 bg-cyan-400/10 px-5 text-xs font-semibold text-cyan-300 transition hover:bg-cyan-200"
               >
                 Browse the library
                 <ArrowUpRight className="h-3.5 w-3.5" />

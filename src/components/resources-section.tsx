@@ -696,7 +696,7 @@ export default function ResourcesSection() {
               href={roadmap.href}
               target="_blank"
               rel="noreferrer"
-              className="mt-2 flex h-11 items-center justify-center gap-2 rounded-xl bg-white text-sm font-semibold text-slate-950 transition hover:bg-cyan-200"
+              className="mt-2 flex h-11 items-center justify-center gap-2 rounded-xl border border-cyan-400/20 bg-cyan-400/10 text-sm font-semibold text-cyan-300 transition hover:bg-cyan-200"
             >
               Open Full Roadmap
               <ArrowUpRight className="h-4 w-4" />
