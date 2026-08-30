@@ -19,7 +19,6 @@ import {
   Rocket,
   Search,
   Send,
-  Sparkles,
   Star,
   Users,
   X,

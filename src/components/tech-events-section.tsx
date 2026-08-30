@@ -8,7 +8,6 @@ import {
   ExternalLink,
   MapPin,
   ShieldCheck,
-  Sparkles,
   Layers3,
 } from "lucide-react";
 import {
@@ -49,7 +48,6 @@ export default function TechEventsSection() {
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-3xl">
             <div className="inline-flex items-center gap-2 rounded-full border border-cyan-500/20 bg-cyan-500/10 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-cyan-300">
-              <Sparkles className="h-4 w-4" />
               Tech Events
             </div>
 

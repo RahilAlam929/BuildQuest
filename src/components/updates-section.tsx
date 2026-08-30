@@ -3,7 +3,6 @@
 import { motion } from "framer-motion";
 import {
   Activity,
-  Sparkles,
   Clock3,
   TerminalSquare,
   Rocket,
@@ -36,7 +35,6 @@ export default function UpdatesSection({
       <div className="relative mx-auto w-full max-w-6xl">
         <div className="mb-6">
           <div className="inline-flex items-center gap-2 rounded-full border border-sky-500/20 bg-slate-950/50 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-sky-300/80">
-            <Sparkles className="h-4 w-4" />
             Build Log
           </div>
 

@@ -7,7 +7,6 @@ import {
   CalendarDays,
   Clock3,
   Megaphone,
-  Sparkles,
   Trophy,
 } from "lucide-react";
 
@@ -76,7 +75,7 @@ export default function EventsSection({
         <div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.18em] text-slate-400">
-              <Sparkles className="h-3.5 w-3.5 text-cyan-300" />
+              <Megaphone className="h-3.5 w-3.5 text-cyan-300" />
               Events & Updates
             </div>
 

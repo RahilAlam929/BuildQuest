@@ -7,7 +7,6 @@ import {
   CheckCircle2,
   FileText,
   Lightbulb,
-  Sparkles,
   Target,
   Trophy,
   Users,

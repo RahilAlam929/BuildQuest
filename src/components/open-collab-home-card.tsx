@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Handshake, Sparkles, Users } from "lucide-react";
+import { ArrowRight, Handshake, Users } from "lucide-react";
 
 export default function OpenCollabHomeCard() {
   return (
@@ -27,7 +27,6 @@ export default function OpenCollabHomeCard() {
               Team-ups
             </span>
             <span className="chip-soft inline-flex items-center gap-2 px-3 py-1.5 text-[11px] text-slate-300">
-              <Sparkles className="h-3.5 w-3.5 text-cyan-300" />
               Serious collabs
             </span>
           </div>

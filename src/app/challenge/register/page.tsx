@@ -10,7 +10,6 @@ import {
   Mail,
   Users,
   Building2,
-  Sparkles,
   GraduationCap,
   Briefcase,
   CheckCircle2,
@@ -358,7 +357,6 @@ function SelectField({
   return (
     <label className={`block ${className}`}>
       <span className="mb-2 inline-flex items-center gap-2 text-sm font-medium text-slate-300">
-        <Sparkles className="h-4 w-4" />
         {label}
       </span>
       <select
@@ -394,7 +392,6 @@ function TextAreaField({
   return (
     <label className={`block ${className}`}>
       <span className="mb-2 inline-flex items-center gap-2 text-sm font-medium text-slate-300">
-        <Sparkles className="h-4 w-4" />
         {label}
       </span>
       <textarea

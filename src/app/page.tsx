@@ -11,7 +11,6 @@ import {
   Network,
   Rocket,
   ShieldCheck,
-  Sparkles,
   Terminal,
   Trophy,
   Wrench,
@@ -99,7 +98,7 @@ export default function HomePage() {
         <div className="relative mx-auto max-w-7xl px-5 pb-20 pt-16 sm:px-8 sm:pb-24 sm:pt-20 lg:px-10">
           <div className="mx-auto max-w-4xl text-center">
             <div className="inline-flex items-center gap-2 rounded-full border border-cyan-400/15 bg-cyan-400/[0.06] px-4 py-2 text-[10px] font-medium uppercase tracking-[0.2em] text-cyan-300">
-              <Sparkles className="h-3.5 w-3.5" />
+              <Rocket className="h-3.5 w-3.5" />
               Learn • Practice • Build
             </div>
 

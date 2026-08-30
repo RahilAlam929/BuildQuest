@@ -12,7 +12,6 @@ import {
   Link as LinkIcon,
   Search,
   ShieldCheck,
-  Sparkles,
   Upload,
   X,
   Zap,
@@ -264,7 +263,6 @@ export default function ChallengeSubmitPage() {
             <div
               className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[11px] uppercase tracking-[0.18em] ${meta.chip}`}
             >
-              <Sparkles className="h-4 w-4" />
               Final Submission
             </div>
 

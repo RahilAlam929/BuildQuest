@@ -8,7 +8,6 @@ import {
   Lightbulb,
   Rocket,
   ShieldCheck,
-  Sparkles,
   Target,
   Trophy,
   Users,
@@ -85,7 +84,7 @@ export const challengeData: Record<string, ChallengeItem> = {
       {
         title: "AI Productivity Tool",
         text: "Build assistants or automation tools that improve speed, focus, and execution.",
-        icon: <Sparkles className="h-4 w-4" />,
+        icon: null,
       },
       {
         title: "Education / Learning",
@@ -163,7 +162,7 @@ export const challengeData: Record<string, ChallengeItem> = {
       {
         title: "Campus Innovation",
         text: "Solve student and campus ecosystem problems with scalable ideas.",
-        icon: <Sparkles className="h-4 w-4" />,
+        icon: null,
       },
       {
         title: "Startup Concepts",
@@ -296,7 +295,7 @@ export const challengeSteps = [
   {
     title: "Problem Statement",
     desc: "Open the full problem statement page and understand the expected output.",
-    icon: <Sparkles className="h-5 w-5" />,
+    icon: null,
   },
   {
     title: "Register",
@@ -495,7 +494,7 @@ export const upcomingTechItems: TechEventItem[] = [
     sourceType: "official",
     theme: "from-cyan-500/20 via-blue-500/10 to-indigo-500/20",
     iconBg: "bg-cyan-500/10 text-cyan-300 border-cyan-500/20",
-    icon: <Sparkles className="h-5 w-5" />,
+    icon: null,
   },
   {
     id: "sharda-hackathon-greater-noida-2026",

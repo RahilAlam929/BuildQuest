@@ -12,7 +12,6 @@ import {
   Cloud,
   Shield,
   Search,
-  Sparkles,
 } from "lucide-react";
 
 type RoadmapKey =
@@ -583,7 +582,6 @@ export default function ResourcesSection() {
       {/* Header */}
       <div className="mb-10">
         <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-cyan-400/15 bg-cyan-400/[0.05] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-cyan-300">
-          <Sparkles className="h-3 w-3" />
           BuildQuest Library
         </div>
 

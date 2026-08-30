@@ -7,7 +7,6 @@ import {
   ArrowUpRight,
   Brain,
   Search,
-  Sparkles,
   Target,
   Zap,
   ShieldCheck,
@@ -143,7 +142,6 @@ export default function ProblemBankPage() {
 
           <div className="relative">
             <div className="inline-flex items-center gap-2 rounded-full border border-fuchsia-500/20 bg-fuchsia-500/10 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-fuchsia-300">
-              <Sparkles className="h-4 w-4" />
               Problem Bank
             </div>
 
@@ -241,7 +239,6 @@ export default function ProblemBankPage() {
         {/* Featured */}
         <section className="mt-8">
           <div className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-cyan-300" />
             <h2 className="text-2xl font-semibold text-white">Featured problems</h2>
           </div>
 

@@ -6,7 +6,6 @@ import {
   Brain,
   Code2,
   Lightbulb,
-  Sparkles,
   Layers3,
 } from "lucide-react";
 
@@ -49,7 +48,6 @@ export default function ChallengeSection() {
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div className="max-w-2xl">
           <div className="badge-pill inline-flex items-center gap-2 px-3 py-1 text-[10px] uppercase tracking-[0.18em] text-cyan-300">
-            <Sparkles className="h-3.5 w-3.5" />
             Challenges
           </div>
 

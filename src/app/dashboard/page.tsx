@@ -12,7 +12,6 @@ import {
   Lightbulb,
   Mail,
   Pencil,
-  Sparkles,
   Target,
   Trophy,
   Upload,
@@ -470,7 +469,6 @@ export default function DashboardPage() {
 
             <section className="section-shell p-6">
               <div className="flex items-center gap-2 text-cyan-300">
-                <Sparkles className="h-4 w-4" />
                 <span className="text-xs uppercase tracking-[0.16em]">
                   Quick Actions
                 </span>
@@ -693,7 +691,6 @@ export default function DashboardPage() {
 
             <section className="section-shell p-6">
               <div className="flex items-center gap-2 text-cyan-300">
-                <Sparkles className="h-4 w-4" />
                 <span className="text-xs uppercase tracking-[0.16em]">
                   Live Collaboration Requests
                 </span>

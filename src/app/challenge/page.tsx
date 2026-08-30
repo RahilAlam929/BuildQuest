@@ -38,7 +38,6 @@ export default function ChallengePage() {
 
           <div className="relative">
             <div className="inline-flex items-center gap-2 rounded-full border border-cyan-500/20 bg-cyan-500/10 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-cyan-300">
-              <Sparkles className="h-4 w-4" />
               Challenge Hub
             </div>
 

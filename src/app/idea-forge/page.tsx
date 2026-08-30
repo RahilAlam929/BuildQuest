@@ -15,7 +15,6 @@ import {
   Server,
   ShieldCheck,
   Smartphone,
-  Sparkles,
   Wrench,
 } from "lucide-react";
 
@@ -551,7 +550,6 @@ export default function IdeaForgePage() {
       <div className="mt-6 rounded-[32px] border border-slate-800/70 bg-slate-950/60 p-6 shadow-[0_0_0_1px_rgba(15,23,42,0.5),0_20px_50px_rgba(2,6,23,0.4)] sm:p-8">
         <section className="rounded-[28px] border border-slate-800/70 bg-slate-900/35 p-6">
           <div className="inline-flex items-center gap-2 rounded-full border border-cyan-500/20 bg-cyan-500/10 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-cyan-300">
-            <Sparkles className="h-4 w-4" />
             Idea Forge
           </div>
 

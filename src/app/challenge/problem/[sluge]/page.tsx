@@ -5,7 +5,6 @@ import Link from "next/link";
 import {
   ArrowLeft,
   Brain,
-  Sparkles,
   Target,
   Zap,
   CheckCircle,
@@ -69,7 +68,6 @@ export default function ProblemDetailPage() {
       {/* HERO */}
       <div className="mt-6 rounded-3xl border border-slate-800 bg-slate-950/60 p-6">
         <div className="text-cyan-300 text-xs uppercase flex gap-2">
-          <Sparkles className="h-4 w-4" />
           Problem Detail
         </div>
 

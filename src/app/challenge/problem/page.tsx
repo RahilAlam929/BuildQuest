@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
   X,
-  Sparkles,
   CalendarDays,
   Trophy,
   Zap,
@@ -347,7 +346,6 @@ export default function ChallengeProblemPage() {
         <div className="mb-8 flex items-start justify-between gap-4">
           <div>
             <div className="inline-flex items-center gap-2 rounded-full border border-slate-700 bg-slate-900/60 px-3 py-1 text-[10px] uppercase tracking-[0.18em] text-slate-400">
-              <Sparkles className="h-3.5 w-3.5" />
               {problem.badge}
             </div>
 
